@@ -212,7 +212,7 @@ def strnmldict(nmlall, format=''):
 
     """
     def latexstr(item):
-        return item.replace('_', '\\_')
+        return item.replace('_', '\\_').replace('/', '\\slash ')
 
     def latexrepr(item):
         if isinstance(item, str):
@@ -267,18 +267,22 @@ def strnmldict(nmlall, format=''):
             % \\definecolor{hilite}{cmyk}{0, 0, 0.9, 0}\\newcommand{\\nmldiffer}[1]{\\colorbox{hilite}{#1}}\\setlength{\\fboxsep}{0pt} % colour highlight of differing variables (requires color package)
             % \\newcommand{\\nmllink}[2]{#1} % don't link variables
             % \\newcommand{\\nmllink}[2]{\href{https://github.com/mom-ocean/MOM5/search?q=#2}{#1}} % link variables to documentation (requires hyperref package)
+            % and also the length 'nmllen', e.g.
+            % \\newlength{\\nmllen}\\setlength{\\nmllen}{12ex}
 
             """)
-            st += '\\newcolumntype{R}{>{\\raggedleft\\arraybackslash}p{12ex}}\n'
+            st += '\\newcolumntype{R}{>{\\raggedleft\\arraybackslash}p{\\nmllen}}\n'
             st += '\\begin{tabularx}{\\linewidth}{X' + 'R' * len(fnames) + '}\n'
             st += '\\hline\n'
             st += '\\textbf{Group\\hfill Variable}'
-            for fn in rmcommonprefix(rmcommonsuffix(fnames)):
+            # for fn in rmcommonprefix(rmcommonsuffix(fnames)):
+            for fn in fnames:
                 st += '\t & \t\\textbf{' + latexstr(fn) + '}'
             st += ' \\\\\n\\hline\\endfirsthead\n'
             st += '\\hline\n'
             st += '\\textbf{Group (continued)\\hfill Variable}'
-            for fn in rmcommonprefix(rmcommonsuffix(fnames)):
+            # for fn in rmcommonprefix(rmcommonsuffix(fnames)):
+            for fn in fnames:
                 st += '\t & \t\\textbf{' + latexstr(fn) + '}'
             st += ' \\\\\n\\hline\\endhead\n'
             for group in sorted(nmlss):
