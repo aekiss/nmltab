@@ -31,7 +31,7 @@ Shows only the semantic differences between the namelist files, in markdown.
 ```
 nmltab.py --format latex file1.nml file2.nml ... fileN.nml > nml.tex
 ```
-Creates latex file `nml.tex` containing a table of all groups and variables in the namelist files.
+Creates latex file `nml.tex` containing a table of all groups and variables in the namelist files (and highlighting semantic differences).
 
 ```
 nmltab.py -h --format latex file1.nml file2.nml ... fileN.nml > nml.tex
