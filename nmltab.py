@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """
-General-purpose tools to tabulate, diff and superset Fortran namelist files.
 
+General-purpose tools to semantically tabulate, diff and superset Fortran namelist files.
+Also includes a command-line interface.
 Andrew Kiss https://github.com/aekiss
+Apache 2.0 License http://www.apache.org/licenses/LICENSE-2.0.txt
 """
 
 import f90nml  # from http://f90nml.readthedocs.io
@@ -10,6 +12,7 @@ import textwrap
 import copy
 import warnings
 import collections
+# from IPython.display import display, Markdown
 
 
 def nmldict(nmlfnames):
@@ -321,22 +324,62 @@ def strnmldict(nmlall, format=''):
     return st
 
 
+def nml_md(nmlfnames):
+    """
+    Display table in a Jupter notebook of groups and variables in Fortran namelist files.
+
+    Parameters
+    ----------
+    nmlfnames : str, tuple or list
+        string, or tuple or list of any number of namelist file path strings.
+        Repeated files are silently ignored.
+
+    Returns
+    -------
+    None
+
+    """
+    from IPython.display import display, Markdown  # slow to load so do it here
+    display(Markdown(strnmldict(nmldict(nmlfnames), format='md')))
+    return None
+
+
+def nmldiff_md(nmlfnames):
+    """
+    Display table in a Jupter notebook of semantic differences in groups and variables in Fortran namelist files.
+
+    Parameters
+    ----------
+    nmlfnames : str, tuple or list
+        string, or tuple or list of any number of namelist file path strings.
+        Repeated files are silently ignored.
+
+    Returns
+    -------
+    None
+
+    """
+    from IPython.display import display, Markdown  # slow to load so do it here
+    display(Markdown(strnmldict(nmldiff(nmldict(nmlfnames)), format='md')))
+    return None
+
+
 if __name__ == '__main__':
     import argparse
     import sys
     parser = argparse.ArgumentParser(description=
-        'Tabulate (and optionally diff) multiple Fortran namelist files.\
+        'Semantically tabulate (and optionally diff) multiple Fortran namelist files.\
         Undefined namelist variables are shown as blank.\
         Repeated files are silently ignored.')
     parser.add_argument('-d', '--diff',
                         action='store_true', default=False,
-                        help='only show differences (default: show all)')
+                        help='only show semantic differences (default: show all); \
+                        exit code 0: no differences; 1: differences')
     parser.add_argument('-F', '--format', type=str,
                         metavar='fmt', default='str',
                         choices=['str', 'md', 'markdown', 'latex'],
-                        help="output format: 'str' (default), 'md', \
-                        'markdown', or 'latex'; \
-                        exit code 0: no differences; 1: differences.")
+                        help="alternative output format: \
+                        'markdown' or 'latex'")
     parser.add_argument('file', metavar='file', type=str, nargs='+',
                         help='Fortran namelist file')
     args = parser.parse_args()
