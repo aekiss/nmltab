@@ -279,13 +279,13 @@ def strnmldict(nmlall, format=''):
             st += '\\newcolumntype{R}{>{\\raggedleft\\arraybackslash}p{\\nmllen}}\n'
             st += '\\begin{tabularx}{\\linewidth}{X' + 'R' * len(fnames) + '}\n'
             st += '\\hline\n'
-            st += '\\textbf{Group\\hfill Variable}'
+            st += '\\textbf{Group\\quad\\hfill Variable}'
             # for fn in rmcommonprefix(rmcommonsuffix(fnames)):
             for fn in fnames:
                 st += '\t & \t\\textbf{' + latexstr(fn) + '}'
             st += ' \\\\\n\\hline\\endfirsthead\n'
             st += '\\hline\n'
-            st += '\\textbf{Group (continued)\\hfill Variable}'
+            st += '\\textbf{Group (continued)\\quad\\hfill Variable}'
             # for fn in rmcommonprefix(rmcommonsuffix(fnames)):
             for fn in fnames:
                 st += '\t & \t\\textbf{' + latexstr(fn) + '}'
