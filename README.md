@@ -11,6 +11,10 @@ Standard unix `diff` is not much use for comparing Fortran namelists, because tw
 ## Usage examples
 
 ### Command line
+```
+nmltab.py -h
+```
+Provides usage information.
 
 ```
 nmltab.py file1.nml file2.nml ... fileN.nml
