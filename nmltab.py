@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 
 General-purpose tools to semantically tabulate, diff and superset Fortran namelist files.
@@ -8,6 +8,12 @@ Latest version: https://github.com/aekiss/nmltab
 Author: Andrew Kiss https://github.com/aekiss
 Apache 2.0 License http://www.apache.org/licenses/LICENSE-2.0.txt
 """
+
+from __future__ import print_function
+
+# for testing my modified f90nml
+import sys
+sys.path.insert(0, '/Users/andy/Documents/COSIMA/github/aekiss/f90nml')
 
 import f90nml  # from http://f90nml.readthedocs.io
 import textwrap
@@ -190,6 +196,27 @@ def rmcommonsuffix(strlist):
         return list(strlist)
     else:
         return [s[:(-i)] for s in strlist]
+
+
+def tidy_overwrite(nmlall):
+    """
+    Overwrite namelist files with parsed namelist data from those files (if any).
+
+    Parameters
+    ----------
+    nmlall : dict or OrderedDict
+        dict (e.g. returned by nmldict) with `key`:`value` pairs where
+        `key` is filename path string to be overwritten
+        `value` is Namelist (typically from filename via f90nml.read)
+
+    Returns
+    -------
+    None
+
+    """
+    for nml in nmlall:
+        f90nml.write(nmlall[nml], nml, force=True, sort=True) # requires https://github.com/marshallward/f90nml/pull/50
+    return None
 
 
 def strnmldict(nmlall, format=''):
@@ -380,6 +407,11 @@ if __name__ == '__main__':
                         action='store_true', default=False,
                         help='only show semantic differences (default: show all); \
                         exit code 0: no differences; 1: differences')
+    parser.add_argument('--tidy_overwrite',
+                        action='store_true', default=False,
+                        help='OVERWRITE files with only their parsed contents, \
+                        in a consistent, alphabetic format; \
+                        all other options ignored. USE WITH CARE!')
     parser.add_argument('-F', '--format', type=str,
                         metavar='fmt', default='str',
                         choices=['str', 'md', 'markdown', 'latex'],
@@ -390,16 +422,20 @@ if __name__ == '__main__':
     args = parser.parse_args()
     fmt = vars(args)['format']
     diff = vars(args)['diff']
+    tidy = vars(args)['tidy_overwrite']
     files = vars(args)['file']
     nmld = nmldict(files)
-    if diff:
-        nmld = nmldiff(nmld)
-    nmldss = superset(nmld)
-    if len(nmldss) == 0:
-        sys.exit(0)
+    if tidy:
+        tidy_overwrite(nmld)
     else:
-        print(strnmldict(nmld, format=fmt), end='', flush=True)
         if diff:
-            sys.exit(1)
-        else:
+            nmld = nmldiff(nmld)
+        nmldss = superset(nmld)
+        if len(nmldss) == 0:
             sys.exit(0)
+        else:
+            print(strnmldict(nmld, format=fmt), end='', flush=True)
+            if diff:
+                sys.exit(1)
+            else:
+                sys.exit(0)
