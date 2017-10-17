@@ -200,7 +200,9 @@ def rmcommonsuffix(strlist):
 
 def tidy_overwrite(nmlall):
     """
-    Overwrite namelist files with parsed namelist data from those files (if any).
+    Overwrite namelist files with parsed namelist data from those files,
+    sorted alphabetically by group then variable name.
+    Files with no namelist data are left untouched.
 
     Parameters
     ----------
@@ -215,7 +217,9 @@ def tidy_overwrite(nmlall):
 
     """
     for nml in nmlall:
-        f90nml.write(nmlall[nml], nml, force=True, sort=True) # requires https://github.com/marshallward/f90nml/pull/50
+        if len(nmlall[nml]) > 0:
+            nmlall[nml].sort = True
+            f90nml.write(nmlall[nml], nml, force=True)  # requires https://github.com/marshallward/f90nml/pull/50
     return None
 
 
@@ -407,16 +411,20 @@ if __name__ == '__main__':
                         action='store_true', default=False,
                         help='only show semantic differences (default: show all); \
                         exit code 0: no differences; 1: differences')
-    parser.add_argument('--tidy_overwrite',
-                        action='store_true', default=False,
-                        help='OVERWRITE files with only their parsed contents, \
-                        in a consistent, alphabetic format; \
-                        all other options ignored. USE WITH CARE!')
     parser.add_argument('-F', '--format', type=str,
                         metavar='fmt', default='str',
                         choices=['str', 'md', 'markdown', 'latex'],
                         help="alternative output format: \
                         'markdown' or 'latex'")
+    parser.add_argument('--tidy_overwrite',
+                        action='store_true', default=False,
+                        help='OVERWRITE files with only their parsed contents, \
+                        with consistent formatting and sorted alphabetically \
+                        by group then variable name. \
+                        This makes standard diff much more useful.\
+                        Files with no namelist data are left untouched. \
+                        All other options are ignored. \
+                        USE WITH CARE!')
     parser.add_argument('file', metavar='file', type=str, nargs='+',
                         help='Fortran namelist file')
     args = parser.parse_args()

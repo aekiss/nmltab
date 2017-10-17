@@ -1,12 +1,13 @@
 # nmltab
 
-Python 3 module and command-line tool to tabulate, semantically diff and superset Fortran namelist files, with output to text, markdown and latex.
+Python 3 module and command-line tool to tabulate, semantically diff, superset and consistently format Fortran namelist files, with output to text, markdown, latex and namelists.
 
 Requires [f90nml](https://github.com/marshallward/f90nml) (amongst other packages).
 
 ## Why should I care?
 
-Standard unix `diff` is not much use for comparing Fortran namelists, because two namelists can be equivalent even though they have differences in whitespace, capitalisation, variable order, and representation of values. In contrast, `nmltab.py -d` will show you only the differences that matter to Fortran.
+Standard unix `diff` is not much use for comparing Fortran namelists, because two namelists can be equivalent even though they have differences in whitespace, capitalisation, variable order, and representation of values. 
+In contrast, `nmltab.py -d` will show you only the differences that matter to Fortran. Other options and multiple output formats are also provided - see examples.
 
 ## Usage examples
 
@@ -51,6 +52,16 @@ If you'd rather not have the intermediate `nml.tex` file you can create the tabl
 \input{|"/path/to/python3 /path/to/nmltab.py -h --format latex file1.nml file2.nml ... fileN.nml"}
 ```
 (requires shell escape to be enabled, e.g. via `-shell-escape` in TeXlive). This will automatically update the table whenever the latex is typeset.
+
+```
+nmltab.py --tidy_overwrite file1.nml file2.nml ... fileN.nml
+```
+**Overwrites** existing files with only their parsed contents,
+with consistent formatting and alphabetically sorted 
+by group then variable name.
+This makes standard `diff` much more useful on these files.
+Files with no namelist data are left untouched.
+**USE WITH CARE!**
 
 ### Jupyter notebook
 ```python
