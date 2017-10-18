@@ -20,6 +20,7 @@ import textwrap
 import copy
 import warnings
 import collections
+import os
 # from IPython.display import display, Markdown
 
 
@@ -219,7 +220,14 @@ def tidy_overwrite(nmlall):
     for nml in nmlall:
         if len(nmlall[nml]) > 0:
             nmlall[nml].sort = True
-            f90nml.write(nmlall[nml], nml, force=True)  # requires https://github.com/marshallward/f90nml/pull/50
+            nmlout = nml + '-tmp'
+            try:
+                f90nml.write(nmlall[nml], nmlout)  # requires https://github.com/marshallward/f90nml/pull/50
+                os.replace(nmlout, nml)
+            except:  # TODO: don't use bare except
+                warnings.warn("Error {} tidying '{}'; file left untouched. \
+Delete part-converted file '{}' before trying again."
+                              .format(sys.exc_info()[0], nml, nmlout))
     return None
 
 
