@@ -219,10 +219,10 @@ def tidy_overwrite(nmlall):
     """
     for nml in nmlall:
         if len(nmlall[nml]) > 0:
-            nmlall[nml].sort = True
+            nmlall[nml].sort = True  # requires https://github.com/marshallward/f90nml/pull/50
             nmlout = nml + '-tmp'
             try:
-                f90nml.write(nmlall[nml], nmlout)  # requires https://github.com/marshallward/f90nml/pull/50
+                f90nml.write(nmlall[nml], nmlout)
                 os.replace(nmlout, nml)
             except:  # TODO: don't use bare except
                 warnings.warn("Error {} tidying '{}'; file left untouched. \
