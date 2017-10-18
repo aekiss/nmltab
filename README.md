@@ -51,7 +51,7 @@ If you'd rather not have the intermediate `nml.tex` file you can create the tabl
 ```latex
 \input{|"/path/to/python3 /path/to/nmltab.py -h --format latex file1.nml file2.nml ... fileN.nml"}
 ```
-(requires shell escape to be enabled, e.g. via `-shell-escape` in TeXlive). This will automatically update the table whenever the latex is typeset.
+(requires shell escape to be enabled, e.g. via `-shell-escape` in TeXlive; this is a security hole: only typeset files you trust!). This will automatically update the table whenever the latex is typeset.
 
 ```
 nmltab.py --tidy_overwrite file1.nml file2.nml ... fileN.nml

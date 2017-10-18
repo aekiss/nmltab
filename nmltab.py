@@ -248,7 +248,7 @@ def strnmldict(nmlall, format=''):
 
     """
     def latexstr(item):
-        return item.replace('_', '\\_').replace('/', '\\slash ')
+        return item.replace('_', '\\_').replace('/', '\\slash ').replace('%', '\%')
 
     def latexrepr(item):
         if isinstance(item, str):
@@ -303,7 +303,7 @@ def strnmldict(nmlall, format=''):
             % \\definecolor{hilite}{cmyk}{0, 0, 0.9, 0}\\newcommand{\\nmldiffer}[1]{\\colorbox{hilite}{#1}}\\setlength{\\fboxsep}{0pt} % colour highlight of differing variables (requires color package)
             % \\newcommand{\\nmllink}[2]{#1} % don't link variables
             % \\newcommand{\\nmllink}[2]{\href{https://github.com/mom-ocean/MOM5/search?q=#2}{#1}} % link variables to documentation (requires hyperref package)
-            % and also the length 'nmllen', e.g.
+            % and also define the length 'nmllen' that sets the column width, e.g.
             % \\newlength{\\nmllen}\\setlength{\\nmllen}{12ex}
 
             """)
@@ -323,16 +323,17 @@ def strnmldict(nmlall, format=''):
             st += ' \\\\\n\\hline\\endhead\n'
             for group in sorted(nmlss):
                 for i, var in enumerate(sorted(nmlss[group])):
-                    if i == 0:
-                        gr = group
+                    if i == 0:  # only show group once
+                        gr = '\\&\\nmllink{{{}}}{{{}}}'.format(
+                            latexstr(group), group)
                     else:
                         gr = ''
                     st1 = '{} \\hfill \\nmllink{{{}}}{{{}}}'.format(
-                        latexstr(gr), latexstr(var), var)
+                        gr, latexstr(var), var)  # replaced below if differences
                     if group in nmldss:
-                        if var in nmldss[group]:
+                        if var in nmldss[group]:  # new st1 if differences
                             st1 = '{} \\hfill \\nmllink{{\\nmldiffer{{{}}}}}{{{}}}'.format(
-                                latexstr(gr), latexstr(var), var)
+                                gr, latexstr(var), var)
                     st += st1
                     for fn in fnames:
                         st += '\t & \t'
