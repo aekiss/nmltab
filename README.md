@@ -47,18 +47,24 @@ nmltab.py -h --format latex file1.nml file2.nml ... fileN.nml > nml.tex
 ```
 Creates latex file `nml.tex` containing a table of all semantic differences between the namelist files, which can be read in by `\input{nml.tex}` (but see the comments at the start of `nml.tex` for the packages and command definitions required).
 
-If you'd rather not have the intermediate `nml.tex` file you can create the table directly from within latex via
+If you'd rather not have the intermediate `nml.tex` file you can tablulate namelists directly from within latex (and automatically update the table whenever the latex is typeset) via
+```latex
+\input{|"/path/to/python3 /path/to/nmltab.py --format latex file1.nml file2.nml ... fileN.nml"}
+```
+or to only show differences:
 ```latex
 \input{|"/path/to/python3 /path/to/nmltab.py -h --format latex file1.nml file2.nml ... fileN.nml"}
 ```
-(requires shell escape to be enabled, e.g. via `-shell-escape` in TeXlive; this is a security hole: only typeset files you trust!). This will automatically update the table whenever the latex is typeset.
+This requires shell escape to be enabled, e.g. via `-shell-escape` in TeXlive; this is a security hole: only typeset files you trust!
 
 ```
 nmltab.py --tidy_overwrite file1.nml file2.nml ... fileN.nml
 ```
-**Overwrites** existing files with only their parsed contents,
+**Overwrites** existing files with only their parsed contents
+(all comments are removed),
 with consistent formatting and alphabetically sorted 
-by group then variable name.
+by group then variable name
+(sorting requires https://github.com/marshallward/f90nml/pull/50).
 This makes standard `diff` much more useful on these files.
 Files with no namelist data are left untouched.
 **USE WITH CARE!**
