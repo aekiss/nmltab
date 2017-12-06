@@ -228,74 +228,20 @@ def nmlprune(nmlall):
     Examples
     --------
         >>> nmlprune(nmldict(prunefilelist(glob.glob(*.nml))))
-TODO: finish and test
     """
     if len(nmlall) > 1:
         idx = 0
-        nmlallcopy = copy.deepcopy(nmlall)  # avoid in-place modification by nmldiff(pair)
         while True:
-            # print(idx)
-            # print(nmlallcopy)
-            pair = nmldiff(collections.OrderedDict(
-                        itertools.islice(nmlallcopy.items(), idx, idx+2)))
-    # BUG: nmldiff alters nmlallcopy! Need to deepcopy from nmlall each time!
+            # need deepcopy to avoid in-place modification by nmldiff
+            pair = nmldiff(copy.deepcopy(collections.OrderedDict(
+                        itertools.islice(nmlall.items(), idx, idx+2))))
             if max([len(x) for x in pair.values()]) == 0:
-                del nmlallcopy[list(pair.keys())[1]]  # remove 2nd of pair
+                del nmlall[list(pair.keys())[1]]  # remove 2nd of pair
             else:
                 idx += 1  # 2nd of pair is different from first, so retain it
-            if idx > len(nmlallcopy)-2:
+            if idx > len(nmlall)-2:
                 break
-        # TODO: delete everything from nmlall that's missing from nmlallcopy?
-        # or return nmlallcopy and don't claim to be in-place?
     return nmlall
-
-
-# def rmcommonprefix(strlist):
-#     """
-#     Remove common prefix from a list of strings.
-# 
-#     Parameters
-#     ----------
-#     strlist: list of str
-#         non-empty list of strings
-# 
-#     Returns
-#     -------
-#     strlist: list of str
-#         list of strings with common prefix removed
-# 
-#     """
-#     i = 0  # needed for strlist of length 1 - python bug workaround?
-#     for i in range(0, min(len(s) for s in strlist)):
-#         if len(set(ss[i] for ss in strlist)) > 1:
-#             i = i - 1
-#             break
-#     return [s[(i+1):] for s in strlist]
-
-
-# def rmcommonsuffix(strlist):
-#     """
-#     Remove common suffix from a list of strings.
-# 
-#     Parameters
-#     ----------
-#     strlist: list of str
-#         non-empty list of strings
-# 
-#     Returns
-#     -------
-#     strlist: list of str
-#         list of strings with common suffix removed
-# 
-#     """
-#     for i in range(1, 1 + min(len(s) for s in strlist)):
-#         if len(set(ss[-i] for ss in strlist)) > 1:
-#             i = i - 1
-#             break
-#     if i == 0:
-#         return list(strlist)
-#     else:
-#         return [s[:(-i)] for s in strlist]
 
 
 def tidy_overwrite(nmlall):
@@ -541,7 +487,7 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--prune',
                         action='store_true', default=False,
                         help='ignore all but the first in any sequence files with\
-                        indentical content')
+                        semantically indentical content')
     parser.add_argument('-F', '--format', type=str,
                         metavar='fmt', default='str',
                         choices=['markdown', 'latex'],
