@@ -17,6 +17,7 @@ nmltab.py -h
 ```
 Provides usage information.
 
+#### Basic text display
 ```
 nmltab.py file1.nml file2.nml ... fileN.nml
 ```
@@ -27,6 +28,7 @@ nmltab.py -d file1.nml file2.nml ... fileN.nml
 ```
 Shows only the semantic differences between the namelist files.
 
+#### Markdown output
 ```
 nmltab.py --format markdown file1.nml file2.nml ... fileN.nml
 ```
@@ -36,6 +38,9 @@ Shows all groups and variables in these namelist files, in markdown.
 nmltab.py -d --format markdown file1.nml file2.nml ... fileN.nml
 ```
 Shows only the semantic differences between the namelist files, in markdown.
+
+#### Latex output
+See [here](https://github.com/aekiss/namelist-check) for an example of how latex output can be used. 
 
 ```
 nmltab.py --format latex file1.nml file2.nml ... fileN.nml > nml.tex
@@ -57,6 +62,7 @@ or to only show differences:
 ```
 This requires shell escape to be enabled, e.g. via `-shell-escape` in TeXlive; this is a security hole: only typeset files you trust!
 
+#### Tidying namelist files
 ```
 nmltab.py --tidy_overwrite file1.nml file2.nml ... fileN.nml
 ```
