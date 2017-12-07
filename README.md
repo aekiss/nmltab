@@ -27,6 +27,7 @@ Shows all groups and variables in these namelist files, listed alphabetically.
 nmltab.py -d file1.nml file2.nml ... fileN.nml
 ```
 Shows only the semantic differences between the namelist files.
+To show only the first file in which each change occurs in a sequence of namelist files (e.g. from successive submissions of a simulation), use the `-dp` option (or use `-dpi` to avoid clutter from CICE and MATM timestep counters).
 
 #### Markdown output
 ```
@@ -38,6 +39,7 @@ Shows all groups and variables in these namelist files, in markdown.
 nmltab.py -d --format markdown file1.nml file2.nml ... fileN.nml
 ```
 Shows only the semantic differences between the namelist files, in markdown.
+To show only the first file in which each change occurs in a sequence of namelist files (e.g. from successive submissions of a simulation), use the `-dp` option (or use `-dpi` to avoid clutter from CICE and MATM timestep counters).
 
 #### Latex output
 See [here](https://github.com/aekiss/namelist-check) for an example of how latex output can be used. 
@@ -48,9 +50,9 @@ nmltab.py --format latex file1.nml file2.nml ... fileN.nml > nml.tex
 Creates latex file `nml.tex` containing a table of all groups and variables in the namelist files (and highlighting semantic differences), which can be read in by `\input{nml.tex}` (but see the comments at the start of `nml.tex` for the packages and command definitions required).
 
 ```
-nmltab.py -h --format latex file1.nml file2.nml ... fileN.nml > nml.tex
+nmltab.py -d --format latex file1.nml file2.nml ... fileN.nml > nml.tex
 ```
-Creates latex file `nml.tex` containing a table of all semantic differences between the namelist files, which can be read in by `\input{nml.tex}` (but see the comments at the start of `nml.tex` for the packages and command definitions required).
+Creates latex file `nml.tex` containing a table of all semantic differences between the namelist files, which can be read in by `\input{nml.tex}` (but see the comments at the start of `nml.tex` for the packages and command definitions required). To show only the first file in which each change occurs in a sequence of namelist files (e.g. from successive submissions of a simulation), use the `-dp` option (or use `-dpi` to avoid clutter from CICE and MATM timestep counters).
 
 If you'd rather not have the intermediate `nml.tex` file you can tablulate namelists directly from within latex (and automatically update the table whenever the latex is typeset) via
 ```latex
@@ -58,9 +60,13 @@ If you'd rather not have the intermediate `nml.tex` file you can tablulate namel
 ```
 or to only show differences:
 ```latex
-\input{|"/path/to/python3 /path/to/nmltab.py -h --format latex file1.nml file2.nml ... fileN.nml"}
+\input{|"/path/to/python3 /path/to/nmltab.py -d --format latex file1.nml file2.nml ... fileN.nml"}
 ```
-This requires shell escape to be enabled, e.g. via `-shell-escape` in TeXlive; this is a security hole: only typeset files you trust!
+or to only show differences, and only the first file in which they occur:
+```latex
+\input{|"/path/to/python3 /path/to/nmltab.py -dp --format latex file1.nml file2.nml ... fileN.nml"}
+```
+Piped input via `\input{|` requires shell escape to be enabled, e.g. via `-shell-escape` in TeXlive; this is a security hole: only typeset files you trust!
 
 #### Tidying namelist files
 ```
@@ -82,12 +88,22 @@ import nmltab
 ```python
 nmltab.nml_md(['file1.nml', 'file2.nml', 'file3.nml'])
 ```
-Displays a  markdown table of the contents of file1.nml, file2.nml, file3.nml. Any number of files can be given.
+Displays a markdown table of the contents of file1.nml, file2.nml, file3.nml. Any number of files can be given.
 ```python
-nmltab.nmldiff_md(['file1.nml', 'file2.nml', 'file3.nml'])
+nmltab.nml_md(['file1.nml', 'file2.nml', 'file3.nml'], diff=True)
 ```
-Displays a  markdown table of the semantic differences between file1.nml, file2.nml, file3.nml. Any number of files can be given.
+Displays a markdown table of the semantic differences between file1.nml, file2.nml, file3.nml. Any number of files can be given.
+```python
+nmltab.nml_md(['file1.nml', 'file2.nml', 'file3.nml'], diff=True, prune=True)
+```
+Displays a markdown table of the semantic differences between file1.nml, file2.nml, file3.nml. Any number of files can be given.
+Only the first file in which each change occurs is shown.
 
+Tip: use `glob` to specify multiple files via wildcards, e.g.
+```python
+import glob
+nmltab.nml_md(glob.glob('output*/ocean/*.nml'), diff=True, prune=True)
+```
 
 ### Python
 ```python
@@ -106,6 +122,7 @@ nmltab.superset(nmltab.nmldict(['file1.nml', 'file2.nml', 'file3.nml']))
 ```
 Returns a Namelists of every group and variable that occurs in any of file1.nml, file2.nml, file3.nml. Any number of files can be given. 
 
+Various other useful functions are provided - see the code.
 
 ## Author
 Andrew Kiss <https://github.com/aekiss>
