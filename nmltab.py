@@ -202,7 +202,7 @@ def prunefilelist(fnames):
     return outfnames
 
 
-def nmlprune(nmlall):
+def nmlprune(nmlall, ignore={}):
     """
     In-place remove all Namelists that are the same as the previous one in nmlall.
 
@@ -215,6 +215,11 @@ def nmlprune(nmlall):
         `key` is arbitrary (typically a filename path string)
         `value` is Namelist (typically from filename via f90nml.read)
         For efficiency use prunefilelist on file list before passing to nmldict.
+
+    ignore : dict, optional
+        dict specifying namelist variables whose differences should be ignored.
+        key is namelist group
+        value is a list of variable names within that group
 
     Returns
     -------
@@ -233,8 +238,15 @@ def nmlprune(nmlall):
         idx = 0
         while True:
             # need deepcopy to avoid in-place modification by nmldiff
-            pair = nmldiff(copy.deepcopy(collections.OrderedDict(
-                        itertools.islice(nmlall.items(), idx, idx+2))))
+            pair = copy.deepcopy(collections.OrderedDict(
+                        itertools.islice(nmlall.items(), idx, idx+2)))
+            for group in ignore:
+                for var in ignore[group]:
+                    for fn in pair:
+                        if group in pair[fn]:
+                            if var in pair[fn][group]:
+                                del pair[fn][group][var]
+            nmldiff(pair)
             if max([len(x) for x in pair.values()]) == 0:
                 del nmlall[list(pair.keys())[1]]  # remove 2nd of pair
             else:
@@ -488,6 +500,10 @@ if __name__ == '__main__':
                         action='store_true', default=False,
                         help='ignore all but the first in any sequence files with\
                         semantically indentical content')
+    parser.add_argument('-i', '--ignore_counters',
+                        action='store_true', default=False,
+                        help='when doing --prune, ignore differences in timestep\
+                        counters used in CICE and MATM namelists')
     parser.add_argument('-F', '--format', type=str,
                         metavar='fmt', default='str',
                         choices=['markdown', 'latex'],
@@ -510,6 +526,7 @@ if __name__ == '__main__':
     fmt = vars(args)['format']
     diff = vars(args)['diff']
     prune = vars(args)['prune']
+    ignore = vars(args)['ignore_counters']
     tidy = vars(args)['tidy_overwrite']
     files = vars(args)['file']
     if prune and not tidy:
@@ -522,7 +539,12 @@ if __name__ == '__main__':
         if diff:
             nmld = nmldiff(nmld)
         if prune:
-            nmld = nmlprune(nmld)
+            if ignore:
+                nmld = nmlprune(nmld,
+                                ignore={'setup_nml': ['istep0'],
+                                        'coupling': ['inidate', 'truntime0']})
+            else:
+                nmld = nmlprune(nmld)
         nmldss = superset(nmld)
         if len(nmldss) == 0:
             sys.exit(0)
