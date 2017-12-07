@@ -216,7 +216,7 @@ def nmlprune(nmlall, ignore={}):
         `value` is Namelist (typically from filename via f90nml.read)
         For efficiency use prunefilelist on file list before passing to nmldict.
 
-    ignore : dict, optional
+    ignore : dict, optional, default={}
         dict specifying namelist variables whose differences should be ignored.
         key is namelist group
         value is a list of variable names within that group
@@ -300,12 +300,12 @@ def strnmldict(nmlall, format='', masterswitch=''):
         `key` is arbitrary (typically a filename path string)
         `value` is Namelist (typically from filename via f90nml.read)
 
-    format : str, optional, case insensitive
+    format : str, optional, case insensitive, default=''
         'md' or 'markdown': markdown string output
         'latex': latex string output
         anything else: standard string output
 
-    masterswitch : str, optional, case insensitive
+    masterswitch : str, optional, case insensitive, default=''
         key with boolean value that disables other variables in group
         if present and false, e.g. 'use_this_module' in MOM.
         NB: this key might be absent in namelist differences.
@@ -442,7 +442,9 @@ def strnmldict(nmlall, format='', masterswitch=''):
     return st
 
 
-def nml_md(nmlfnames):
+def nml_md(nmlfnames, diff=False, prune=False,
+           ignore={'setup_nml': ['istep0'],
+                   'coupling': ['inidate', 'truntime0']}):
     """
     Display table in a Jupter notebook of groups and variables in Fortran
     namelist files.
@@ -453,26 +455,15 @@ def nml_md(nmlfnames):
         string, or tuple or list of any number of namelist file path strings.
         Repeated files are silently ignored.
 
-    Returns
-    -------
-    None
+    diff : boolean, optional, default=False
+        just display semantic differences
 
-    """
-    from IPython.display import display, Markdown  # slow to load so do it here
-    display(Markdown(strnmldict(nmldict(nmlfnames), format='md')))
-    return None
+    prune : boolean, optional, default=False
+        just display the first file in which each variable change occurs
 
-
-def nmldiff_md(nmlfnames):
-    """
-    Display table in a Jupter notebook of semantic differences in groups and
-    variables in Fortran namelist files.
-
-    Parameters
-    ----------
-    nmlfnames : str, tuple or list
-        string, or tuple or list of any number of namelist file path strings.
-        Repeated files are silently ignored.
+    ignore : dict, optional,
+        default={'setup_nml': ['istep0'], 'coupling': ['inidate', 'truntime0']}
+        variable names to ignore differences in if prune=True
 
     Returns
     -------
@@ -480,8 +471,37 @@ def nmldiff_md(nmlfnames):
 
     """
     from IPython.display import display, Markdown  # slow to load so do it here
-    display(Markdown(strnmldict(nmldiff(nmldict(nmlfnames)), format='md')))
+    if prune:
+        nmld = nmldict(prunefilelist(nmlfnames))
+    else:
+        nmld = nmldict(nmlfnames)
+    if diff:
+        nmldiff(nmld)
+    if prune:
+        nmlprune(nmld, ignore=ignore)
+    display(Markdown(strnmldict(nmld, format='md')))
     return None
+
+
+# def nmldiff_md(nmlfnames):
+#     """
+#     Display table in a Jupter notebook of semantic differences in groups and
+#     variables in Fortran namelist files.
+# 
+#     Parameters
+#     ----------
+#     nmlfnames : str, tuple or list
+#         string, or tuple or list of any number of namelist file path strings.
+#         Repeated files are silently ignored.
+# 
+#     Returns
+#     -------
+#     None
+# 
+#     """
+#     from IPython.display import display, Markdown  # slow to load so do it here
+#     display(Markdown(strnmldict(nmldiff(nmldict(nmlfnames)), format='md')))
+#     return None
 
 
 if __name__ == '__main__':
@@ -537,14 +557,13 @@ if __name__ == '__main__':
         tidy_overwrite(nmld)
     else:
         if diff:
-            nmld = nmldiff(nmld)
+            nmldiff(nmld)
         if prune:
             if ignore:
-                nmld = nmlprune(nmld,
-                                ignore={'setup_nml': ['istep0'],
-                                        'coupling': ['inidate', 'truntime0']})
+                nmlprune(nmld, ignore={'setup_nml': ['istep0'],
+                                       'coupling': ['inidate', 'truntime0']})
             else:
-                nmld = nmlprune(nmld)
+                nmlprune(nmld)
         nmldss = superset(nmld)
         if len(nmldss) == 0:
             sys.exit(0)
