@@ -73,10 +73,9 @@ Piped input via `\input{|` requires shell escape to be enabled, e.g. via `-shell
 nmltab.py --tidy_overwrite file1.nml file2.nml ... fileN.nml
 ```
 **Overwrites** existing files with only their parsed contents
-(all comments are removed),
+(all comments and non-namelist content are removed),
 with consistent formatting and alphabetically sorted 
-by group then variable name
-(sorting requires https://github.com/marshallward/f90nml/pull/50).
+by group then variable name.
 This makes standard `diff` much more useful on these files.
 Files with no namelist data are left untouched.
 **USE WITH CARE!**

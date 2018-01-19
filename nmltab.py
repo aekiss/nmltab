@@ -260,7 +260,6 @@ def tidy_overwrite(nmlall):
     """
     Overwrite namelist files with parsed namelist data from those files,
     sorted alphabetically by group then variable name.
-    (Sorting requires https://github.com/marshallward/f90nml/pull/50).
     Files with no namelist data are left untouched.
 
     Parameters
@@ -277,10 +276,9 @@ def tidy_overwrite(nmlall):
     """
     for nml in nmlall:
         if len(nmlall[nml]) > 0:
-            nmlall[nml].sort = True  # requires https://github.com/marshallward/f90nml/pull/50
             nmlout = nml + '-tmp'
             try:
-                f90nml.write(nmlall[nml], nmlout)
+                f90nml.write(nmlall[nml], nmlout, sort=True)
                 os.replace(nmlout, nml)
             except:  # TODO: don't use bare except
                 warnings.warn("Error {} tidying '{}'; file left untouched. \
@@ -518,8 +516,8 @@ if __name__ == '__main__':
                         exit code 0: no differences; 1: differences')
     parser.add_argument('-p', '--prune',
                         action='store_true', default=False,
-                        help='ignore all but the first in any sequence files with\
-                        semantically indentical content')
+                        help='ignore all but the first in any sequence of files \
+                        with semantically indentical content')
     parser.add_argument('-i', '--ignore_counters',
                         action='store_true', default=False,
                         help='when doing --prune, ignore differences in timestep\
@@ -532,11 +530,10 @@ if __name__ == '__main__':
     parser.add_argument('--tidy_overwrite',
                         action='store_true', default=False,
                         help='OVERWRITE files with only their parsed contents \
-                        (all comments are removed), \
+                        (all comments and non-namelist content are removed), \
                         with consistent formatting and sorted alphabetically \
-                        by group then variable name \
-                        (sorting requires https://github.com/marshallward/f90nml/pull/50). \
-                        This makes standard diff much more useful.\
+                        by group then variable name. \
+                        This makes standard diff much more useful. \
                         Files with no namelist data are left untouched. \
                         All other options are ignored. \
                         USE WITH CARE!')
