@@ -287,7 +287,7 @@ Delete part-converted file '{}' before trying again."
     return None
 
 
-def strnmldict(nmlall, format='', masterswitch=''):
+def strnmldict(nmlall, format='', masterswitch='', hide={}):
     """
     Return string representation of dict of Namelists.
 
@@ -308,6 +308,13 @@ def strnmldict(nmlall, format='', masterswitch=''):
         if present and false, e.g. 'use_this_module' in MOM.
         NB: this key might be absent in namelist differences.
         Only used for format='latex'.
+
+    hide : dict, optional, default={}
+        dict specifying namelist variables that will not be shown in output.
+        key is namelist group
+        value is a list of variable names within that group
+        Currently only works for format='latex'.
+        TODO: implement for all formats
 
     Returns
     -------
@@ -384,6 +391,8 @@ def strnmldict(nmlall, format='', masterswitch=''):
             % \\newlength{\\nmllen}\\setlength{\\nmllen}{12ex}
 
             """)
+            # TODO: get this use case working: 
+            # % \\definecolor{hilite}{cmyk}{0, 0, 0.9, 0}\\newcommand{\\nmldiffer}[1]{\\rowcolor{hilite}#1} % colour highlight of rows with differing variables (requires xcolor package) BUG: DOESN'T WORK! Misplaced \noalign due to leading \hfill (and namelist group name if at start of group)
             st += '\\newcolumntype{R}{>{\\raggedleft\\arraybackslash}p{\\nmllen}}\n'
             st += '\\begin{tabularx}{\\linewidth}{X' + 'R' * len(fnames) + '}\n'
             st += '\\hline\n'
@@ -399,30 +408,33 @@ def strnmldict(nmlall, format='', masterswitch=''):
                 st += '\t & \t\\textbf{' + latexstr(fn) + '}'
             st += ' \\\\\n\\hline\\endhead\n'
             for group in sorted(nmlss):
-                for i, var in enumerate(sorted(nmlss[group])):
-                    if i == 0:  # only show group once
-                        gr = '\\&\\nmllink{{{}}}{{{}}}'.format(
-                            latexstr(group), group)
-                    else:
-                        gr = ''
-                    st1 = '{} \\hfill \\nmllink{{{}}}{{{}}}'.format(
-                        gr, latexstr(var), var)  # replaced below if differences
-                    if group in nmldss:
-                        if var in nmldss[group]:  # new st1 if differences
-                            st1 = '{} \\hfill \\nmllink{{\\nmldiffer{{{}}}}}{{{}}}'.format(
-                                gr, latexstr(var), var)
-                    st += st1
-                    for fn in fnames:
-                        st += '\t & \t'
-                        if group in nmlall[fn]:
-                            if var in nmlall[fn][group]:
-                                st1 = latexrepr(nmlall[fn][group][var])  # TODO: use f90repr
-                                if masterswitch in nmlall[fn][group]:
-                                    if not nmlall[fn][group][masterswitch] \
-                                            and var != masterswitch:
-                                        st1 = '\\ignored{' + st1 + '}'
-                                st += st1
-                    st += ' \\\\\n'
+                firstvar = True
+                for var in sorted(nmlss[group]):
+                    if not ((group in hide) and (var in hide[group])):
+                        if firstvar:  # only show group once
+                            gr = '\\&\\nmllink{{{}}}{{{}}}'.format(
+                                latexstr(group), group)
+                            firstvar = False
+                        else:
+                            gr = ''
+                        st1 = '{} \\hfill \\nmllink{{{}}}{{{}}}'.format(
+                            gr, latexstr(var), var)  # replaced below if differences
+                        if group in nmldss:
+                            if var in nmldss[group]:  # new st1 if differences
+                                st1 = '{} \\hfill \\nmldiffer{{\\nmllink{{{}}}{{{}}}}}'.format(
+                                    gr, latexstr(var), var)
+                        st += st1
+                        for fn in fnames:
+                            st += '\t & \t'
+                            if group in nmlall[fn]:
+                                if var in nmlall[fn][group]:
+                                    st1 = latexrepr(nmlall[fn][group][var])  # TODO: use f90repr
+                                    if masterswitch in nmlall[fn][group]:
+                                        if not nmlall[fn][group][masterswitch] \
+                                                and var != masterswitch:
+                                            st1 = '\\ignored{' + st1 + '}'
+                                    st += st1
+                        st += ' \\\\\n'
                 if len(nmlss[group]) > 0:
                     st += '\\hline\n'
             st += '\\end{tabularx}\n'
@@ -521,7 +533,8 @@ if __name__ == '__main__':
     parser.add_argument('-i', '--ignore_counters',
                         action='store_true', default=False,
                         help='when doing --prune, ignore differences in timestep\
-                        counters used in CICE and MATM namelists')
+                        counters etc in CICE and MATM namelists, and also hide\
+                        them from latex output')
     parser.add_argument('-F', '--format', type=str,
                         metavar='fmt', default='str',
                         choices=['markdown', 'latex'],
@@ -546,6 +559,11 @@ if __name__ == '__main__':
     ignore = vars(args)['ignore_counters']
     tidy = vars(args)['tidy_overwrite']
     files = vars(args)['file']
+    if prune and ignore:
+        ignored = {'setup_nml': ['istep0', 'npt', 'restart', 'runtype'],
+                   'coupling': ['inidate', 'runtime', 'truntime0']}
+    else:
+        ignored = {}
     if prune and not tidy:
         nmld = nmldict(prunefilelist(files))
     else:
@@ -556,16 +574,13 @@ if __name__ == '__main__':
         if diff:
             nmldiff(nmld)
         if prune:
-            if ignore:
-                nmlprune(nmld, ignore={'setup_nml': ['istep0'],
-                                       'coupling': ['inidate', 'truntime0']})
-            else:
-                nmlprune(nmld)
+            nmlprune(nmld, ignore=ignored)
         nmldss = superset(nmld)
         if len(nmldss) == 0:
             sys.exit(0)
         else:
-            print(strnmldict(nmld, format=fmt, masterswitch='use_this_module'),
+            print(strnmldict(nmld, format=fmt, masterswitch='use_this_module',
+                             hide=ignored),
                   end='', flush=True)
             if diff:
                 sys.exit(1)
