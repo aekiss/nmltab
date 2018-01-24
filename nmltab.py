@@ -435,7 +435,7 @@ def strnmldict(nmlall, format='', masterswitch='', hide={}):
                                             st1 = '\\ignored{' + st1 + '}'
                                     st += st1
                         st += ' \\\\\n'
-                if len(nmlss[group]) > 0:
+                if not firstvar:
                     st += '\\hline\n'
             st += '\\end{tabularx}\n'
     else:
