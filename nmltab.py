@@ -39,6 +39,7 @@ def nmldict(nmlfnames):
     nmlfnames : str, tuple or list
         string, or tuple or list of any number of namelist file path strings.
         Repeated files are silently ignored.
+        If a file contains repeated groups, only the first instance is used.
 
     Returns
     -------
@@ -56,6 +57,11 @@ def nmldict(nmlfnames):
         nmlall[nml] = f90nml.read(nml)
         if len(nmlall[nml]) == 0:
             warnings.warn('{} does not contain any namelist data'.format(nml))
+    for nml in nmlall:
+        for group in nmlall[nml]:
+            if isinstance(nmlall[nml][group], list):
+                warnings.warn('&{} occurs {} times in {}. Using only the first instance of this group.'.format(group, str(len(nmlall[nml][group])), nml))
+                nmlall[nml][group] = nmlall[nml][group][0]
     return nmlall
 
 
@@ -94,11 +100,6 @@ def superset(nmlall):
         #         nmlsuperset[group].update(gr)
         for nml in nmlall:
             if group in nmlall[nml]:
-                # print("nml={}, group={}".format(nml, group))
-                # if isinstance(nmlall[nml][group], list):
-                #     for gr in nmlall[nml][group]:
-                #         nmlsuperset[group].update(gr)
-                # else:
                 nmlsuperset[group].update(nmlall[nml][group])
     # nmlsuperset groups now contain all keys that were in any nml
     return nmlsuperset
