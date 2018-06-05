@@ -60,6 +60,16 @@ def nmldict(nmlfnames):
     for nml in nmlall:
         for group in nmlall[nml]:
             if isinstance(nmlall[nml][group], list):
+                # A list indicates group is defined more than once in nml file.
+                # The list contains the groups in order of occurrence.
+                # For the nth group's values to have any effect in f90,
+                # the namelist needs to be read n times from the input file,
+                # without closing the file in between.
+                # If the same variable name occurs in multiple instances of 
+                # the same group, the last read instance is used.
+                # Since we don't know how many times the group is read in f90, 
+                # ignoring all but the first seems the safest option.
+                # TODO: provide an option to consolidate all groups in list?
                 warnings.warn('&{} occurs {} times in {}. Using only the first instance of this group.'.format(group, str(len(nmlall[nml][group])), nml))
                 nmlall[nml][group] = nmlall[nml][group][0]
     return nmlall
