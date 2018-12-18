@@ -357,7 +357,7 @@ def strnmldict(nmlall, format='', masterswitch='', hide={}):
     nmlss = superset(nmlall)
     nmldss = superset(nmldiff(copy.deepcopy(nmlall)))  # avoid in-place modification
     fnames = list(nmlall.keys())
-    colwidth = max((len(f) for f in fnames), default=0)
+    colwidth = max((len(f) for f in fnames), default=0)  # default keyword requires Python 3.4 or later
     # TODO: would be faster & more efficient to .append a list of strings
     # and then join them:
     # http://docs.python-guide.org/en/latest/writing/structure/#mutable-and-immutable-types

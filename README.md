@@ -2,7 +2,7 @@
 
 Python 3 module and command-line tool to tabulate, semantically diff, superset and consistently format Fortran namelist files, with output to text, markdown, latex and namelists.
 
-Requires [f90nml](https://github.com/marshallward/f90nml) (amongst other packages).
+Requires Python 3.4 or later, and [f90nml](https://github.com/marshallward/f90nml) (amongst other packages).
 
 ## Why should I care?
 
