@@ -358,6 +358,9 @@ def strnmldict(nmlall, format='', masterswitch='', hide={}):
     nmldss = superset(nmldiff(copy.deepcopy(nmlall)))  # avoid in-place modification
     fnames = list(nmlall.keys())
     colwidth = max((len(f) for f in fnames), default=0)  # default keyword requires Python 3.4 or later
+    # TODO: test if the following works in python pre- and post-3.4
+    # colwidth = max([len(f) for f in fnames] or [0])  # defaults to 0 if fnames is empty list, since empty list evaluates to False
+
     # TODO: would be faster & more efficient to .append a list of strings
     # and then join them:
     # http://docs.python-guide.org/en/latest/writing/structure/#mutable-and-immutable-types
@@ -571,7 +574,7 @@ if __name__ == '__main__':
     tidy = vars(args)['tidy_overwrite']
     files = vars(args)['file']
     if prune and ignore:
-        ignored = {'setup_nml': ['istep0', 'npt', 'restart', 'runtype'],
+        ignored = {'setup_nml': ['istep0'], #, 'npt', 'restart', 'runtype'],
                    'coupling': ['inidate', 'runtime', 'truntime0']}
     else:
         ignored = {}
