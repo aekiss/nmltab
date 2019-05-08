@@ -42,7 +42,7 @@ Shows only the semantic differences between the namelist files, in markdown.
 To show only the first file in which each change occurs in a sequence of namelist files (e.g. from successive submissions of a simulation), use the `-dp` option (or use `-dpi` to avoid clutter from CICE and MATM timestep counters).
 
 #### Latex output
-You have two options, either a complete .tex file (`--format latex-complete`) or just the table (`--format latex`)
+You have two options, either a complete .tex file (`--format latex-complete`) or just the table (`--format latex`).
 
 ##### Complete latex output
 

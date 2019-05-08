@@ -311,8 +311,8 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
 
     fmt : str, optional, case insensitive, default=''
         'md' or 'markdown': markdown string output
-        'latex': latex string output (incomplete, but suitable as an input file)
-        'latex-complete': latex, suitable for a complete .tex file
+        'latex': latex string output (table only, suitable as an input file)
+        'latex-complete': latex string, suitable for a complete .tex file
         anything else: standard string output
 
     masterswitch : str, optional, case insensitive, default=''
@@ -618,7 +618,7 @@ if __name__ == '__main__':
                         metavar='fmt', default='str',
                         choices=['markdown', 'latex', 'latex-complete'],
                         help="alternative output format: \
-                        'markdown' or 'latex' (incomplete, but suitable as an \
+                        'markdown' or 'latex' (table only, suitable as an \
                         input file) or 'latex-complete' (a complete .tex file)")
     parser.add_argument('-u', '--url', type=str,
                         metavar='url', default='',
