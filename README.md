@@ -42,7 +42,25 @@ Shows only the semantic differences between the namelist files, in markdown.
 To show only the first file in which each change occurs in a sequence of namelist files (e.g. from successive submissions of a simulation), use the `-dp` option (or use `-dpi` to avoid clutter from CICE and MATM timestep counters).
 
 #### Latex output
-See [here](https://github.com/aekiss/namelist-check) for an example of how latex output can be used. 
+You have two options, either a complete .tex file (`--format latex-complete`) or just the table (`--format latex`)
+
+##### Complete latex output
+
+```
+nmltab.py --format latex-complete file1.nml file2.nml ... fileN.nml > nml.tex
+```
+Creates a complete latex file `nml.tex` containing a table of all groups and variables in the namelist files (and highlighting semantic differences). This can then be converted to a PDF via latex, e.g. `pdflatex nml.tex`. If you run `makeindex nml.tex` and re-run `pdflatex nml.tex` you'll also get an index.
+
+If the `-d` option is used only differences will be shown (with no highlighting). To show only the first file in which each change occurs in a sequence of namelist files (e.g. from successive submissions of a simulation), use the `-dp` option (or use `-dpi` to avoid clutter from CICE and MATM timestep counters).
+
+There's also a `--url` option to hyperlink variables and groups to web searches on their names, e.g.
+```
+nmltab.py --format latex-complete --url https://github.com/COSIMA/libaccessom2/search?q= file1.nml file2.nml ... fileN.nml > nml.tex
+```
+
+##### Latex output of table only
+
+See [here](https://github.com/aekiss/namelist-check) for an example of how this type of latex output can be used. 
 
 ```
 nmltab.py --format latex file1.nml file2.nml ... fileN.nml > nml.tex
