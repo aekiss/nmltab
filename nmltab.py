@@ -472,12 +472,12 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
             for fn in fnames:
                 st += '\t & \t\\textbf{' + latexstr(fn) + '}'
             st += ' \\\\\n\\showrowcolors\n\\hline\\endfirsthead\n'
-            st += '\\hline\n'
+            st += '\\hline\n\\hiderowcolors\n'
             st += '\\textbf{Group (continued)\\quad\\hfill Variable}'
             # for fn in rmcommonprefix(rmcommonsuffix(fnames)):
             for fn in fnames:
                 st += '\t & \t\\textbf{' + latexstr(fn) + '}'
-            st += ' \\\\\n\\hline\\endhead\n'
+            st += ' \\\\\n\\showrowcolors\n\\hline\\endhead\n'
             for group in sorted(nmlss):
                 firstvar = True
                 for var in sorted(nmlss[group]):
