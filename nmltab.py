@@ -464,14 +464,14 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
                 st += '\n'
             # TODO: get this use case working: 
             # % \definecolor{hilite}{cmyk}{0, 0, 0.9, 0}\newcommand{\nmldiffer}[1]{\rowcolor{hilite}#1} % colour highlight of rows with differing variables (requires xcolor package) BUG: DOESN'T WORK! Misplaced \noalign due to leading \hfill (and namelist group name if at start of group)
-            st += '\\newcolumntype{R}{>{\\raggedleft\\arraybackslash}p{\\nmllen}}\n'
+            st += '\\newcolumntype{R}{>{\\raggedleft\\arraybackslash}b{\\nmllen}}\n'
             st += '\\begin{tabularx}{\\linewidth}{X' + 'R' * len(fnames) + '}\n'
-            st += '\\hline\n'
+            st += '\\hline\n\\hiderowcolors\n'
             st += '\\textbf{Group\\quad\\hfill Variable}'
             # for fn in rmcommonprefix(rmcommonsuffix(fnames)):
             for fn in fnames:
                 st += '\t & \t\\textbf{' + latexstr(fn) + '}'
-            st += ' \\\\\n\\hline\\endfirsthead\n'
+            st += ' \\\\\n\\showrowcolors\n\\hline\\endfirsthead\n'
             st += '\\hline\n'
             st += '\\textbf{Group (continued)\\quad\\hfill Variable}'
             # for fn in rmcommonprefix(rmcommonsuffix(fnames)):
