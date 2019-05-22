@@ -115,7 +115,7 @@ def superset(nmlall):
     return nmlsuperset
 
 
-def nmldiff(nmlall):
+def nmldiff(nmlall, keep=''):
     """
     In-place remove every group/variable that's the same in all file Namelists.
 
@@ -125,6 +125,8 @@ def nmldiff(nmlall):
         dict (e.g. returned by nmldict) with `key`:`value` pairs where
         `key` is arbitrary (typically a filename path string)
         `value` is Namelist (typically from filename via f90nml.read)
+    keep : variable name
+        variable name to always keep in diff, unless the group has no differences
 
     Returns
     -------
@@ -151,6 +153,8 @@ def nmldiff(nmlall):
     for group in nmlsuperset:
         # init: whether group is present and identical in all namelist files
         deletegroup = True
+        varkept = False  # whether var is kept when it would otherwise be deleted
+        onlyvarkept = False  # whether var is kept and is the only var in this group across all nmls
         for nml in nmlall:
             deletegroup = deletegroup and (group in nmlall[nml])
         if deletegroup:  # group present in all namelist files
@@ -168,13 +172,24 @@ def nmldiff(nmlall):
                             (nmlall[nml][group][var] ==
                              nmlsuperset[group][var])
                     if deletevar:
-                        for nml in nmlall:
-                            # delete var from this group in all nmls
-                            del nmlall[nml][group][var]
-            for nml in nmlall:
-                deletegroup = deletegroup and (len(nmlall[nml][group]) == 0)
+                        if var == keep:
+                            varkept = True
+                        else:
+                            for nml in nmlall:
+                                # delete var from this group in all nmls
+                                del nmlall[nml][group][var]
+            if varkept:
+                onlyvarkept = True
+                for nml in nmlall:
+                    onlyvarkept = onlyvarkept and len(nmlall[nml][group]) < 2
+                    if onlyvarkept and len(nmlall[nml][group]) == 1:
+                        onlyvarkept = list(nmlall[nml][group].keys())[0] == keep
+            if onlyvarkept:
+                deletegroup = True
+            else:
+                deletegroup = max([len(nmlall[nml][group]) for nml in nmlall]) == 0
             if deletegroup:
-                # group is common to all nmls and now empty so delete
+                # group is common to all nmls and now empty (or only holding keep) so delete
                 for nml in nmlall:
                     del nmlall[nml][group]
     return nmlall
@@ -614,6 +629,10 @@ if __name__ == '__main__':
                         help='when doing --prune, ignore differences in timestep\
                         counters etc in CICE and MATM namelists, and also hide\
                         them from latex output')
+    parser.add_argument('-k', '--keep', type=str,
+                        metavar='str', default='',
+                        help="variable to always keep in diff, unless it's the\
+                        only one in a group, e.g. 'use_this_module'")
     parser.add_argument('-F', '--format', type=str,
                         metavar='fmt', default='str',
                         choices=['markdown', 'latex', 'latex-complete'],
@@ -640,6 +659,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     fmt = vars(args)['format']
     url = vars(args)['url']
+    keep = vars(args)['keep']
     diff = vars(args)['diff']
     prune = vars(args)['prune']
     ignore = vars(args)['ignore_counters']
@@ -658,7 +678,7 @@ if __name__ == '__main__':
         tidy_overwrite(nmld)
     else:
         if diff:
-            nmldiff(nmld)
+            nmldiff(nmld, keep=keep)
         if prune:
             nmlprune(nmld, ignore=ignored)
         nmldss = superset(nmld)

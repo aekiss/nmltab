@@ -15,7 +15,7 @@ In contrast, `nmltab.py -d` will show you only the differences that matter to Fo
 ```
 nmltab.py -h
 ```
-Provides usage information.
+Provides usage information, including details not shown below.
 
 #### Basic text display
 ```
@@ -27,7 +27,7 @@ Shows all groups and variables in these namelist files, listed alphabetically.
 nmltab.py -d file1.nml file2.nml ... fileN.nml
 ```
 Shows only the semantic differences between the namelist files.
-To show only the first file in which each change occurs in a sequence of namelist files (e.g. from successive submissions of a simulation), use the `-dp` option (or use `-dpi` to avoid clutter from CICE and MATM timestep counters).
+To show only the first file in which each change occurs in a sequence of namelist files (e.g. from successive submissions of a simulation), use the `-dp` option (or use `-dpi` to avoid clutter from CICE and MATM timestep counters). Use the `-k` option to specify a variable name to always retain in the differences (unless it is the only name in the group).
 
 #### Markdown output
 ```
@@ -39,7 +39,7 @@ Shows all groups and variables in these namelist files, in markdown.
 nmltab.py -d --format markdown file1.nml file2.nml ... fileN.nml
 ```
 Shows only the semantic differences between the namelist files, in markdown.
-To show only the first file in which each change occurs in a sequence of namelist files (e.g. from successive submissions of a simulation), use the `-dp` option (or use `-dpi` to avoid clutter from CICE and MATM timestep counters).
+To show only the first file in which each change occurs in a sequence of namelist files (e.g. from successive submissions of a simulation), use the `-dp` option (or use `-dpi` to avoid clutter from CICE and MATM timestep counters). Use the `-k` option to specify a variable name to always retain in the differences (unless it is the only name in the group).
 
 #### Latex output
 You have two options, either a complete .tex file (`--format latex-complete`) or just the table (`--format latex`).
@@ -51,7 +51,7 @@ nmltab.py --format latex-complete file1.nml file2.nml ... fileN.nml > nml.tex
 ```
 Creates a complete latex file `nml.tex` containing a table of all groups and variables in the namelist files (and highlighting semantic differences). This can then be converted to a PDF via latex, e.g. `pdflatex nml.tex`. If you run `makeindex nml.tex` and re-run `pdflatex nml.tex` you'll also get an index.
 
-If the `-d` option is used only differences will be shown (with no highlighting). To show only the first file in which each change occurs in a sequence of namelist files (e.g. from successive submissions of a simulation), use the `-dp` option (or use `-dpi` to avoid clutter from CICE and MATM timestep counters).
+If the `-d` option is used only differences will be shown (with no highlighting). To show only the first file in which each change occurs in a sequence of namelist files (e.g. from successive submissions of a simulation), use the `-dp` option (or use `-dpi` to avoid clutter from CICE and MATM timestep counters). Use the `-k` option to specify a variable name to always retain in the differences (unless it is the only name in the group).
 
 There's also a `--url` option to hyperlink variables and groups to web searches on their names, e.g.
 ```
@@ -70,7 +70,7 @@ Creates latex file `nml.tex` containing a table of all groups and variables in t
 ```
 nmltab.py -d --format latex file1.nml file2.nml ... fileN.nml > nml.tex
 ```
-Creates latex file `nml.tex` containing a table of all semantic differences between the namelist files, which can be read in by `\input{nml.tex}` (but see the comments at the start of `nml.tex` for the packages and command definitions required). To show only the first file in which each change occurs in a sequence of namelist files (e.g. from successive submissions of a simulation), use the `-dp` option (or use `-dpi` to avoid clutter from CICE and MATM timestep counters).
+Creates latex file `nml.tex` containing a table of all semantic differences between the namelist files, which can be read in by `\input{nml.tex}` (but see the comments at the start of `nml.tex` for the packages and command definitions required). To show only the first file in which each change occurs in a sequence of namelist files (e.g. from successive submissions of a simulation), use the `-dp` option (or use `-dpi` to avoid clutter from CICE and MATM timestep counters). Use the `-k` option to specify a variable name to always retain in the differences (unless it is the only name in the group).
 
 If you'd rather not have the intermediate `nml.tex` file you can tablulate namelists directly from within latex (and automatically update the table whenever the latex is typeset) via
 ```latex
