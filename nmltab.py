@@ -328,19 +328,21 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
         'md' or 'markdown': markdown string output
         'latex': latex string output (table only, suitable as an input file)
         'latex-complete': latex string, suitable for a complete .tex file
-        anything else: standard string output
+        'text': text output ([*] &group variable [value] file)
+        'text-tight': as for 'text', but without aligned columns
+        anything else: standard string output (different from 'text')
 
     masterswitch : str, optional, case insensitive, default=''
         key with boolean value that disables other variables in group
         if present and false, e.g. 'use_this_module' in MOM.
         NB: this key might be absent in namelist differences.
-        Only used for fmt='latex'.
+        Only used for fmt='latex' or 'latex-complete'.
 
     hide : dict, optional, default={}
         dict specifying namelist variables that will not be shown in output.
         key is namelist group
         value is a list of variable names within that group
-        Currently only works for fmt='latex'.
+        Ignored for fmt='md' or 'markdown'.
         TODO: implement for all formats
 
     heading : string, optional, default=''
@@ -532,17 +534,45 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
                 \printindex
                 \end{document}
                 """)
+    elif fmt.startswith('text'):
+        if fmt == 'text':
+            gwidth = max([len(g) for g in list(nmlss.keys())], default=0)
+            vwidth = max([max([len(v) for v in list(g.keys())], default=0)
+                          for g in list(nmlss.values())], default=0)
+            dwidth = max([
+                        max([max([len(repr(v)) for v in list(g.values())], default=0)
+                          for g in list(nmlall[fn].values())], default=0)
+                          for fn in nmlall.keys()], default=0)
+        else:  # assumes text-tight - TODO: be more stringent
+            gwidth = 0
+            vwidth = 0
+            dwidth = 0
+        for group in sorted(nmlss):
+            for var in sorted(nmlss[group]):
+                if not ((group in hide) and (var in hide[group])):
+                    st1 = '  '
+                    if group in nmldss:
+                        if var in nmldss[group]:  # star if differences
+                            st1 = '* '
+                    for fn in fnames:
+                        st += st1 + '&' + group.ljust(gwidth) + '  ' + var.ljust(vwidth) + '  '
+                        dstr = ''
+                        if group in nmlall[fn]:
+                            if var in nmlall[fn][group]:
+                                dstr = repr(nmlall[fn][group][var])  # TODO: use f90repr
+                        st += dstr.ljust(dwidth) + '  ' + fn + '\n'
     else:
         for group in sorted(nmlss):
             for var in sorted(nmlss[group]):
-                st += ' ' * (colwidth + 2) + '&{}\n'.format(group)
-                st += ' ' * (colwidth + 2) + ' {}\n'.format(var)
-                for fn in fnames:
-                    st += '{} : '.format(fn.ljust(colwidth))
-                    if group in nmlall[fn]:
-                        if var in nmlall[fn][group]:
-                            st += repr(nmlall[fn][group][var])  # TODO: use f90repr
-                    st += '\n'
+                if not ((group in hide) and (var in hide[group])):
+                    st += ' ' * (colwidth + 2) + '&{}\n'.format(group)
+                    st += ' ' * (colwidth + 2) + ' {}\n'.format(var)
+                    for fn in fnames:
+                        st += '{} : '.format(fn.ljust(colwidth))
+                        if group in nmlall[fn]:
+                            if var in nmlall[fn][group]:
+                                st += repr(nmlall[fn][group][var])  # TODO: use f90repr
+                        st += '\n'
     return st
 
 
@@ -635,10 +665,14 @@ if __name__ == '__main__':
                         only one in a group, e.g. 'use_this_module'")
     parser.add_argument('-F', '--format', type=str,
                         metavar='fmt', default='str',
-                        choices=['markdown', 'latex', 'latex-complete'],
-                        help="alternative output format: \
+                        choices=['markdown', 'latex', 'latex-complete',
+                                 'text', 'text-tight'],
+                        help="optional alternative output format: \
                         'markdown' or 'latex' (table only, suitable as an \
-                        input file) or 'latex-complete' (a complete .tex file)")
+                        input file) or 'latex-complete' (a complete .tex file) \
+                        or 'text' (plain text; with each row row showing \
+                        [*] &group variable [value] file) \
+                        or 'text-tight' (like 'text', but without aligned columns)")
     parser.add_argument('-u', '--url', type=str,
                         metavar='url', default='',
                         help="link all variable and group names to this \

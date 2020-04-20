@@ -29,6 +29,18 @@ nmltab.py -d file1.nml file2.nml ... fileN.nml
 Shows only the semantic differences between the namelist files.
 To show only the first file in which each change occurs in a sequence of namelist files (e.g. from successive submissions of a simulation), use the `-dp` option (or use `-dpi` to avoid clutter from CICE and MATM timestep counters). Use the `-k` option to specify a variable name to always retain in the differences (unless it is the only name in the group).
 
+##### Alternative text display
+
+```
+nmltab.py --format text file1.nml file2.nml ... fileN.nml
+```
+Gives a columnar text format, with each row row showing `[*] &group variable [value] file`. An initial `*` indicates a difference between files. Use the `-d` option to only show differences.
+
+```
+nmltab.py --format text-tight file1.nml file2.nml ... fileN.nml
+```
+Is the same as `--format text` but without column alignment.
+
 #### Markdown output
 ```
 nmltab.py --format markdown file1.nml file2.nml ... fileN.nml
