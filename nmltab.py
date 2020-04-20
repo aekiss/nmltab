@@ -658,7 +658,7 @@ if __name__ == '__main__':
                         action='store_true', default=False,
                         help='when doing --prune, ignore differences in timestep\
                         counters etc in CICE and MATM namelists, and also hide\
-                        them from latex output')
+                        them from output (ignored for markdown output)')
     parser.add_argument('-k', '--keep', type=str,
                         metavar='str', default='',
                         help="variable to always keep in diff, unless it's the\
