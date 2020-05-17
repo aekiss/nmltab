@@ -19,6 +19,7 @@ from __future__ import print_function
 # sys.path.insert(0, '/Users/andy/Documents/COSIMA/github/aekiss/f90nml') # BUG: doesn't work with /Users/andy/anaconda/bin/python3 /Users/andy/bin/nmltab.py --fmt latex    new/control/025deg_jra55_ryf/ice/input_ice_gfdl.nml
 
 import f90nml  # from http://f90nml.readthedocs.io
+import sys
 import filecmp
 import textwrap
 import copy
@@ -282,7 +283,7 @@ def nmlprune(nmlall, ignore={}):
     return nmlall
 
 
-def tidy_overwrite(nmlall):
+def tidy_overwrite(nmlall, colwidth=None):
     """
     Overwrite namelist files with parsed namelist data from those files,
     sorted alphabetically by group then variable name.
@@ -292,8 +293,10 @@ def tidy_overwrite(nmlall):
     ----------
     nmlall : dict or OrderedDict
         dict (e.g. returned by nmldict) with `key`:`value` pairs where
-        `key` is filename path string to be overwritten
-        `value` is Namelist (typically from filename via f90nml.read)
+            `key` is filename path string to be overwritten
+            `value` is Namelist (typically from filename via f90nml.read)
+        colwidth: minimum width of column from start of variable name to
+            start of " = ". If None, automatically uses longest variable name.
 
     Returns
     -------
@@ -302,9 +305,12 @@ def tidy_overwrite(nmlall):
     """
     for nml in nmlall:
         if len(nmlall[nml]) > 0:
+            if colwidth is None:
+                colwidth = max([max([len(v) for v in list(g.keys())], default=0)
+                                for g in list(nmlall[nml].values())], default=0)
             nmlout = nml + '-tmp'
             try:
-                f90nml.write(nmlall[nml], nmlout, sort=True)
+                f90nml.write(nmlall[nml], nmlout, sort=True, colwidth=colwidth)
                 os.replace(nmlout, nml)
             except:  # TODO: don't use bare except
                 warnings.warn("Error {} tidying '{}'; file left untouched. \
@@ -640,7 +646,6 @@ def nml_md(nmlfnames, diff=False, prune=False,
 
 if __name__ == '__main__':
     import argparse
-    import sys
     parser = argparse.ArgumentParser(description=
         'Semantically tabulate (and optionally diff) multiple Fortran namelist files.\
         Undefined namelist variables are shown as blank.\
@@ -709,7 +714,7 @@ if __name__ == '__main__':
     else:
         nmld = nmldict(files)
     if tidy:
-        tidy_overwrite(nmld)
+        tidy_overwrite(nmld, colwidth=17)
     else:
         if diff:
             nmldiff(nmld, keep=keep)
