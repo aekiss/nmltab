@@ -473,7 +473,7 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
 
                 """)
                 st += heading
-                if url is '':
+                if url == '':
                     st += r'\newcommand{\nmllink}[2]{#1\index{#1}}'
                 else:
                     st += 'Variables are weblinks to source code searches.\n'
