@@ -331,6 +331,7 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
         'latex-complete': latex string, suitable for a complete .tex file
         'text': text output ([*] &group variable [value] file)
         'text-tight': as for 'text', but without aligned columns
+        'csv': as for 'text-tight', but comma-delimited
         anything else: standard string output (different from 'text')
 
     masterswitch : str, optional, case insensitive, default=''
@@ -351,7 +352,7 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
 
     url : string, optional, default=''
         url prefix for hyperlinked variables and groups if fmt='latex-complete'
-        url='' (the default) has no hyperlinks
+        or 'csv'. url='' (the default) has no hyperlinks
 
     Returns
     -------
@@ -564,17 +565,24 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
                         st += dstr.ljust(dwidth) + '  ' + fn + '\n'
     elif fmt.startswith('csv'):
         csvout = csv.writer(sys.stdout)
-        csvout.writerow(['diff', 'group', 'variable'] + fnames)
+        if url == '':
+            csvout.writerow(['diff', 'group', 'variable'] + fnames)
+        else:
+            csvout.writerow(['diff', 'group', 'group link',
+                             'variable', 'variable link'] + fnames)
         for group in sorted(nmlss):
             for var in sorted(nmlss[group]):
                 if not ((group in hide) and (var in hide[group])):
                     diff = None
                     if group in nmldss:
                         if var in nmldss[group]:  # star if differences
-                            diff='*'
-                    fields = [diff,'&'+group, var]
+                            diff = '*'
+                    if url == '':
+                        fields = [diff, '&'+group, var]
+                    else:
+                        fields = [diff, '&'+group, url+group, var, url+var]
                     for fn in fnames:
-                        grp = nmlall[fn].get(group,{})
+                        grp = nmlall[fn].get(group, {})
                         value = grp.get(var, None)
                         fields.append(value)
                 csvout.writerow(fields)
@@ -690,7 +698,7 @@ if __name__ == '__main__':
                         or 'text' (plain text; with each row row showing \
                         [*] &group variable [value] file) \
                         or 'text-tight' (like 'text', but without aligned columns) \
-                        or 'csv', like 'text-tight' but with comma-separated fields")
+                        or 'csv' (like 'text-tight' but with comma-separated fields)")
     parser.add_argument('-u', '--url', type=str,
                         metavar='url', default='',
                         help="link all variable and group names to this \
@@ -755,7 +763,7 @@ if __name__ == '__main__':
                       end='', flush=True)
             else:
                 print(strnmldict(nmld, fmt=fmt, masterswitch='use_this_module',
-                                 hide=ignored),
+                                 hide=ignored, url=url),
                       end='', flush=True)
             if diff:
                 sys.exit(1)
