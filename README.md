@@ -98,6 +98,13 @@ or to only show differences, and only the first file in which they occur:
 ```
 Piped input via `\input{|` requires shell escape to be enabled, e.g. via `-shell-escape` in TeXlive; this is a security hole: only typeset files you trust!
 
+##### CSV output
+
+```
+nmltab.py --format csv file1.nml file2.nml ... fileN.nml > nml.csv
+```
+Outputs comma-separated variable (CSV) formatted list of all groups and variables in the namelist files. Each row of the output is a separate variable, and there is a column with the value of the variable for each file.
+
 #### Tidying namelist files
 ```
 nmltab.py --tidy_overwrite file1.nml file2.nml ... fileN.nml
