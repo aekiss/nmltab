@@ -24,8 +24,9 @@ import textwrap
 import copy
 import warnings
 import collections
-import os
+import os, sys
 import itertools
+import csv
 
 # from IPython.display import display, Markdown
 
@@ -561,6 +562,22 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
                             if var in nmlall[fn][group]:
                                 dstr = repr(nmlall[fn][group][var])  # TODO: use f90repr
                         st += dstr.ljust(dwidth) + '  ' + fn + '\n'
+    elif fmt.startswith('csv'):
+        csvout = csv.writer(sys.stdout)
+        csvout.writerow(['diff', 'group', 'variable'] + fnames)
+        for group in sorted(nmlss):
+            for var in sorted(nmlss[group]):
+                if not ((group in hide) and (var in hide[group])):
+                    diff = None
+                    if group in nmldss:
+                        if var in nmldss[group]:  # star if differences
+                            diff='*'
+                    fields = [diff,'&'+group, var]
+                    for fn in fnames:
+                        grp = nmlall[fn].get(group,{})
+                        value = grp.get(var, None)
+                        fields.append(value)
+                csvout.writerow(fields)
     else:
         for group in sorted(nmlss):
             for var in sorted(nmlss[group]):
@@ -666,13 +683,14 @@ if __name__ == '__main__':
     parser.add_argument('-F', '--format', type=str,
                         metavar='fmt', default='str',
                         choices=['markdown', 'latex', 'latex-complete',
-                                 'text', 'text-tight'],
+                                 'text', 'text-tight', 'csv'],
                         help="optional alternative output format: \
                         'markdown' or 'latex' (table only, suitable as an \
                         input file) or 'latex-complete' (a complete .tex file) \
                         or 'text' (plain text; with each row row showing \
                         [*] &group variable [value] file) \
-                        or 'text-tight' (like 'text', but without aligned columns)")
+                        or 'text-tight' (like 'text', but without aligned columns) \
+                        or 'csv', like 'text-tight' but with comma-separated fields")
     parser.add_argument('-u', '--url', type=str,
                         metavar='url', default='',
                         help="link all variable and group names to this \
