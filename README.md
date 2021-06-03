@@ -1,6 +1,6 @@
 # nmltab
 
-Python 3 module and command-line tool to tabulate, semantically diff, superset and consistently format Fortran namelist files, with output to text, markdown, latex and namelists.
+Python 3 module and command-line tool to tabulate, semantically diff, superset and consistently format Fortran namelist files, with output to text, markdown, csv, latex and namelists.
 
 Requires Python 3.4 or later, and [f90nml](https://github.com/marshallward/f90nml) (amongst other packages).
 
@@ -103,7 +103,7 @@ Piped input via `\input{|` requires shell escape to be enabled, e.g. via `-shell
 ```
 nmltab.py --format csv file1.nml file2.nml ... fileN.nml > nml.csv
 ```
-Outputs comma-separated variable (CSV) formatted list of all groups and variables in the namelist files. Each row of the output is a separate variable, and there is a column with the value of the variable for each file.
+Outputs comma-separated variable (CSV) formatted list of all groups and variables in the namelist files. Each row of the output is a separate variable, and there is a column with the value of the variable for each file. If the `-d` option is used only differences will be shown.
 
 #### Tidying namelist files
 ```
