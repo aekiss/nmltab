@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 
 General-purpose tools to semantically tabulate, diff and superset Fortran namelist files.
