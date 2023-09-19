@@ -33,7 +33,7 @@ import tempfile
 
 def mom6input(nml):
     """
-    Return input stream that modifies MOM6 input into a format readable by f90nml.
+    Return name of temporary file that modifies MOM6 input into namelist format readable by f90nml.
     """
     tmp = tempfile.NamedTemporaryFile(mode='w+', delete=False)
     tmp.write('&null\n')
@@ -78,12 +78,12 @@ def nmldict(nmlfnames):
             tmp = mom6input(nml)
             nmlall[nml] = f90nml.read(tmp)
             os.remove(tmp)
-            empty = True
-            for groupval in nmlall[nml].values():
-                if len(groupval) > 0:
-                    empty = False
-            if empty:
-                warnings.warn('{} does not contain any namelist data'.format(nml))
+        empty = True
+        for groupval in nmlall[nml].values():
+            if len(groupval) > 0:
+                empty = False
+        if empty:
+            warnings.warn('{} does not contain any namelist data'.format(nml))
     for nml in nmlall:
         for group in nmlall[nml]:
             if isinstance(nmlall[nml][group], list):
