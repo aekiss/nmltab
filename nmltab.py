@@ -27,9 +27,26 @@ import collections
 import os, sys
 import itertools
 import csv
+import tempfile
 
 # from IPython.display import display, Markdown
 
+def mom6input(nml):
+    """
+    Return input stream that modifies MOM6 input into a format readable by f90nml.
+    """
+    tmp = tempfile.NamedTemporaryFile(mode='w+', delete=False)
+    tmp.write('&null\n')
+    incomment = False
+    with open(nml, 'r') as f:
+        for line in f:
+            incomment = incomment or line.lstrip().startswith('/*')
+            if incomment:
+                incomment = not line.rstrip().endswith('*/')
+            else:
+                tmp.write(line.replace('Z*', 'ZSTAR').replace('KPP%', ''). replace('%KPP', ''))
+    tmp.write('/')
+    return tmp.name
 
 def nmldict(nmlfnames):
     """
@@ -57,7 +74,16 @@ def nmldict(nmlfnames):
     for nml in nmlfnames:
         nmlall[nml] = f90nml.read(nml)
         if len(nmlall[nml]) == 0:
-            warnings.warn('{} does not contain any namelist data'.format(nml))
+            warnings.warn('{} is not a namelist file, so will try to read as a MOM6 input file'.format(nml))
+            tmp = mom6input(nml)
+            nmlall[nml] = f90nml.read(tmp)
+            os.remove(tmp)
+            empty = True
+            for groupval in nmlall[nml].values():
+                if len(groupval) > 0:
+                    empty = False
+            if empty:
+                warnings.warn('{} does not contain any namelist data'.format(nml))
     for nml in nmlall:
         for group in nmlall[nml]:
             if isinstance(nmlall[nml][group], list):
