@@ -34,17 +34,26 @@ import tempfile
 def mom6input(nml):
     """
     Return name of temporary file that modifies MOM6 input into namelist format readable by f90nml.
+    https://mom6.readthedocs.io/en/main/api/generated/pages/Runtime_Parameter_System.html#mom6-parameter-file-syntax
+    Also includes fixes for some non-standard things I've come across.
     """
     tmp = tempfile.NamedTemporaryFile(mode='w+', delete=False)
-    tmp.write('&null\n')
+    tmp.write('&mom6\n')
     incomment = False
     with open(nml, 'r') as f:
         for line in f:
-            incomment = incomment or line.lstrip().startswith('/*')
+            line = line.lstrip().rstrip()
+            incomment = incomment or line.startswith('/*')
             if incomment:
-                incomment = not line.rstrip().endswith('*/')
+                incomment = not line.endswith('*/')
             else:
-                tmp.write(line.replace('Z*', 'ZSTAR').replace('KPP%', ''). replace('%KPP', ''))
+                line = line.split('!', 1)[0]
+                line = line.split('#override', 1)[-1]
+                line = line.split('#', 1)[-1]
+                line = line.replace('Z*', 'ZSTAR').replace('KPP%', ''). replace('%KPP', '')
+                line = line.lstrip().rstrip()
+                tmp.write(line)
+                tmp.write('\n')
     tmp.write('/')
     return tmp.name
 
