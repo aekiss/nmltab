@@ -361,7 +361,8 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
         `value` is Namelist (typically from filename via f90nml.read)
 
     fmt : str, optional, case insensitive, default=''
-        'md' or 'markdown': markdown string output
+        'md' or 'markdown': markdown string output (1 file per row)
+        'md2' or 'markdown2': markdown string output (1 variable per row)
         'latex': latex string output (table only, suitable as an input file)
         'latex-complete': latex string, suitable for a complete .tex file
         'text': text output ([*] &group variable [value] file)
@@ -446,6 +447,49 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
                                 st += repr(nmlall[fn][group][var])  # TODO: use f90repr
                         st += ' | '
             st += '\n'
+    elif fmt in ('md2', 'markdown2'):
+        if len(nmlss) > 0:
+            st += '| Group | Variable |'
+            for fn in fnames:
+                st += ' {} |'.format(fn)
+            st += '\n'
+            st += '| :- | :- |'
+            for fn in fnames:
+                st += ' -: |'.format(fn)
+            st += '\n'
+            for group in sorted(nmlss):
+                firstvar = True
+                for var in sorted(nmlss[group]):
+                    if not ((group in hide) and (var in hide[group])):
+                        if url == '':
+                            varstr = var
+                        else:
+                            varstr = '[{0}]({1}{0})'.format(var, url)
+                        if firstvar:  # only show group once
+                            if url == '':
+                                gr = group
+                            else:
+                                gr = '[{0}]({1}{0})'.format(group, url)
+                            firstvar = False
+                        else:
+                            gr = ''
+                        st1 = '| {} | {} |'.format(gr, varstr)  # replaced below if differences
+                        if group in nmldss:
+                            if var in nmldss[group]:  # new st1 if differences
+                                st1 = '| {} | **{}** |'.format(gr, varstr)
+                                # st1 = '| {} | <span style="color:blue">**{}**</span> |'.format(gr, varstr)  # not supported in github
+                        st += st1
+                        for fn in fnames:
+                            st1 = ''
+                            if group in nmlall[fn]:
+                                if var in nmlall[fn][group]:
+                                    st1 = repr(nmlall[fn][group][var])  # TODO: use f90repr
+                                    if masterswitch in nmlall[fn][group]:
+                                        if not nmlall[fn][group][masterswitch] \
+                                                and var != masterswitch:
+                                            st1 = '_' + st1 + '_'
+                            st += ' ' + st1 + ' |'
+                        st += '\n'
     elif fmt.startswith('latex'):
         if len(nmlss) > 0:
             if fmt == 'latex':
@@ -725,11 +769,12 @@ if __name__ == '__main__':
                         only one in a group, e.g. 'use_this_module'")
     parser.add_argument('-F', '--format', type=str,
                         metavar='fmt', default='str',
-                        choices=['markdown', 'latex', 'latex-complete',
+                        choices=['markdown', 'markdown2', 'latex', 'latex-complete',
                                  'text', 'text-tight', 'csv'],
                         help="optional alternative output format: \
-                        'markdown' or 'latex' (table only, suitable as an \
-                        input file) or 'latex-complete' (a complete .tex file) \
+                        'markdown' (1 file per row) or 'markdown2' (1 variable per row)\
+                        or 'latex' (table only, suitable as an input file)\
+                        or 'latex-complete' (a complete .tex file) \
                         or 'text' (plain text; with each row row showing \
                         [*] &group variable [value] file) \
                         or 'text-tight' (like 'text', but without aligned columns) \
