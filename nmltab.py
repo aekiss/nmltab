@@ -28,6 +28,7 @@ import os, sys
 import itertools
 import csv
 import tempfile
+import io
 
 # from IPython.display import display, Markdown
 
@@ -388,7 +389,7 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
 
     url : string, optional, default=''
         url prefix for hyperlinked variables and groups if fmt='latex-complete'
-        or 'csv'. url='' (the default) has no hyperlinks
+        or 'csv' or 'markdown2'. url='' (the default) has no hyperlinks
 
     Returns
     -------
@@ -642,8 +643,9 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
                             if var in nmlall[fn][group]:
                                 dstr = repr(nmlall[fn][group][var])  # TODO: use f90repr
                         st += dstr.ljust(dwidth) + '  ' + fn + '\n'
-    elif fmt.startswith('csv'):
-        csvout = csv.writer(sys.stdout)
+    elif fmt == 'csv':
+        iost = io.StringIO()
+        csvout = csv.writer(iost)
         if url == '':
             csvout.writerow(['diff', 'group', 'variable'] + fnames)
         else:
@@ -665,6 +667,7 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
                         value = grp.get(var, None)
                         fields.append(value)
                 csvout.writerow(fields)
+        st = iost.getvalue()
     else:
         for group in sorted(nmlss):
             for var in sorted(nmlss[group]):
