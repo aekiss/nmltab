@@ -1,6 +1,6 @@
 # nmltab
 
-Python 3 module and command-line tool to tabulate, semantically diff, superset and consistently format Fortran namelist files, with output to text, markdown, csv, latex and namelists.
+Python 3 module and command-line tool to tabulate, semantically diff, superset and consistently format [Fortran namelist files](https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2023-0/namelist.html) and [MOM6 parameter files](https://mom6.readthedocs.io/en/main/api/generated/pages/Runtime_Parameter_System.html#mom6-parameter-file-syntax), with output to text, markdown, csv, latex and namelists.
 
 Requires Python 3.4 or later, and [f90nml](https://github.com/marshallward/f90nml) (amongst other packages).
 
@@ -42,6 +42,9 @@ nmltab.py --format text-tight file1.nml file2.nml ... fileN.nml
 Is the same as `--format text` but without column alignment.
 
 #### Markdown output
+
+There are two markdown formats: `markdown` (1 file per row) and `markdown2` (1 variable per row).
+
 ```
 nmltab.py --format markdown file1.nml file2.nml ... fileN.nml
 ```
@@ -51,7 +54,7 @@ Shows all groups and variables in these namelist files, in markdown.
 nmltab.py -d --format markdown file1.nml file2.nml ... fileN.nml
 ```
 Shows only the semantic differences between the namelist files, in markdown.
-To show only the first file in which each change occurs in a sequence of namelist files (e.g. from successive submissions of a simulation), use the `-dp` option (or use `-dpi` to avoid clutter from CICE and MATM timestep counters). Use the `-k` option to specify a variable name to always retain in the differences (unless it is the only name in the group).
+To show only the first file in which each change occurs in a sequence of namelist files (e.g. from successive submissions of a simulation), use the `-dp` option (or use `-dpi` to avoid clutter from CICE and MATM timestep counters). Use the `-k` option to specify a variable name to always retain in the differences (unless it is the only name in the group). `markdown2` also supports the `--url` option to hyperlink variables and groups to web searches on their names (see below).
 
 #### Latex output
 You have two options, either a complete .tex file (`--format latex-complete`) or just the table (`--format latex`).
