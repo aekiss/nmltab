@@ -649,8 +649,9 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
         if url == '':
             csvout.writerow(['diff', 'group', 'variable'] + fnames)
         else:
-            csvout.writerow(['diff', 'group', 'group link',
-                             'variable', 'variable link'] + fnames)
+            # csvout.writerow(['diff', 'group', 'group link',
+            #                  'variable', 'variable link'] + fnames)
+            csvout.writerow(['diff', 'group', 'variable'] + fnames)
         for group in sorted(nmlss):
             for var in sorted(nmlss[group]):
                 if not ((group in hide) and (var in hide[group])):
@@ -661,7 +662,10 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
                     if url == '':
                         fields = [diff, '&'+group, var]
                     else:
-                        fields = [diff, '&'+group, url+group, var, url+var]
+                        # fields = [diff, '&'+group, url+group, var, url+var]
+                        fields = [ diff,
+                                  '=HYPERLINK("{}", "{}")'.format(url+group, '&'+group),
+                                  '=HYPERLINK("{}", "{}")'.format(url+var, var) ]
                     for fn in fnames:
                         grp = nmlall[fn].get(group, {})
                         value = grp.get(var, None)
