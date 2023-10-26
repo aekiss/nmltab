@@ -32,6 +32,12 @@ import io
 
 # from IPython.display import display, Markdown
 
+# from https://stackoverflow.com/questions/18854620/whats-the-best-way-to-split-a-string-into-fixed-length-chunks-and-work-with-the
+def chunkstring(string, length):  # return generator breaking string into pieces of at most length
+    return (string[0+i:length+i] for i in range(0, len(string), length))
+
+mom6group = 'mom6'  # notional group for all variables in MOM6 parameter file
+
 def mom6input(nml):
     """
     Return name of temporary file that modifies MOM6 input into namelist format readable by f90nml.
@@ -39,7 +45,7 @@ def mom6input(nml):
     Also includes fixes for some non-standard things I've come across.
     """
     tmp = tempfile.NamedTemporaryFile(mode='w+', delete=False)
-    tmp.write('&mom6\n')
+    tmp.write('&{}\n'.format(mom6group))
     incomment = False
     with open(nml, 'r') as f:
         for line in f:
@@ -50,7 +56,8 @@ def mom6input(nml):
             else:
                 line = line.split('!', 1)[0]
                 line = line.split('#override', 1)[-1]
-                line = line.split('#', 1)[-1]
+                line = line.split('# ', 1)[-1]  # see https://github.com/COSIMA/mom6-panan/commit/80e4a872f2b24f2e41da87439dd342df0c643d00#r130376163
+                line = line.split('#', 1)[0]  # acts like a comment - see https://github.com/COSIMA/mom6-panan/commit/80e4a872f2b24f2e41da87439dd342df0c643d00#r130376163
                 line = line.replace('Z*', 'ZSTAR').replace('KPP%', ''). replace('%KPP', '')
                 line = line.lstrip().rstrip()
                 tmp.write(line)
@@ -429,6 +436,7 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
     # TODO: would be faster & more efficient to .append a list of strings
     # and then join them:
     # http://docs.python-guide.org/en/latest/writing/structure/#mutable-and-immutable-types
+    mom6 = (len(nmlss) == 1) and (list(nmlss.keys())[0] == mom6group)  # flag to omit mom6group if it's the only group
     st = ''
     if fmt in ('md', 'markdown'):
         if len(nmlss) > 0:
@@ -436,7 +444,10 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
             nvar = 0
             for group in sorted(nmlss):
                 for var in sorted(nmlss[group]):
-                    st += '&' + group + '<br>' + var + ' | '
+                    if mom6:
+                        st += var + ' | '
+                    else:
+                        st += '&' + group + '<br>' + var + ' | '
                     nvar += 1
             st += '\n|-' + '-' * colwidth + ':|' + '--:|' * nvar
             for fn in fnames:
@@ -450,22 +461,26 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
             st += '\n'
     elif fmt in ('md2', 'markdown2'):
         if len(nmlss) > 0:
-            st += '| Group | Variable |'
+            if mom6:
+                st += '| Variable |'
+            else:
+                st += '| Group | Variable |'
             for fn in fnames:
-                st += ' {} |'.format(fn)
+                st += ' {} |'.format(fn.replace('/', '/<br>'))
             st += '\n'
-            st += '| :- | :- |'
-            for fn in fnames:
-                st += ' -: |'.format(fn)
+            if mom6:
+                st += '| :- |'
+            else:
+                st += '| :- | :- |'
+            st += ' -: |'*len(fnames)
             st += '\n'
             for group in sorted(nmlss):
                 firstvar = True
                 for var in sorted(nmlss[group]):
                     if not ((group in hide) and (var in hide[group])):
-                        if url == '':
-                            varstr = var
-                        else:
-                            varstr = '[{0}]({1}{0})'.format(var, url)
+                        varstr = '<br>'.join(chunkstring(var, 21))
+                        if url != '':
+                            varstr = '[{0}]({1}{2})'.format(varstr, url, var)
                         if firstvar:  # only show group once
                             if url == '':
                                 gr = group
@@ -479,19 +494,21 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
                             if var in nmldss[group]:  # new st1 if differences
                                 st1 = '| {} | **{}** |'.format(gr, varstr)
                                 # st1 = '| {} | <span style="color:blue">**{}**</span> |'.format(gr, varstr)  # not supported in github
+                        if mom6:
+                            st1 = '|' + '|'.join(st1.split('|')[2:])  # remove group
                         st += st1
                         for fn in fnames:
                             st1 = ''
                             if group in nmlall[fn]:
                                 if var in nmlall[fn][group]:
-                                    st1 = repr(nmlall[fn][group][var])  # TODO: use f90repr
+                                    st1 = '<br>'.join(chunkstring(repr(nmlall[fn][group][var]), 15))  # TODO: use f90repr
                                     if masterswitch in nmlall[fn][group]:
                                         if not nmlall[fn][group][masterswitch] \
                                                 and var != masterswitch:
                                             st1 = '_' + st1 + '_'
                             st += ' ' + st1 + ' |'
                         st += '\n'
-    elif fmt.startswith('latex'):
+    elif fmt.startswith('latex'):  # TODO: omit group if mom6 is True
         if len(nmlss) > 0:
             if fmt == 'latex':
                 st += textwrap.dedent(r"""
@@ -616,7 +633,7 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
                 \printindex
                 \end{document}
                 """)
-    elif fmt.startswith('text'):
+    elif fmt.startswith('text'):  # TODO: omit group if mom6 is True
         if fmt == 'text':
             gwidth = max([len(g) for g in list(nmlss.keys())], default=0)
             vwidth = max([max([len(v) for v in list(g.keys())], default=0)
@@ -643,7 +660,7 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
                             if var in nmlall[fn][group]:
                                 dstr = repr(nmlall[fn][group][var])  # TODO: use f90repr
                         st += dstr.ljust(dwidth) + '  ' + fn + '\n'
-    elif fmt == 'csv':
+    elif fmt == 'csv':  # TODO: omit group if mom6 is True
         iost = io.StringIO()
         csvout = csv.writer(iost)
         if url == '':
@@ -672,7 +689,7 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
                         fields.append(value)
                 csvout.writerow(fields)
         st = iost.getvalue()
-    else:
+    else:  # TODO: omit group if mom6 is True
         for group in sorted(nmlss):
             for var in sorted(nmlss[group]):
                 if not ((group in hide) and (var in hide[group])):
