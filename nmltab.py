@@ -360,7 +360,7 @@ Delete part-converted file '{}' before trying again."
     return None
 
 
-def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
+def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url='', nmlfnameurls=None):
     """
     Return string representation of dict of Namelists.
 
@@ -401,6 +401,11 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
         url prefix for hyperlinked variables and groups if fmt='latex-complete'
         or 'csv' or 'markdown2'. url='' (the default) has no hyperlinks
 
+    nmlfnameurls: dict, default=None
+        dict specifying url for each nmlfilename (only used if fmt='md2' or 'markdown2')
+        only keys that match a key in nmlall are used
+        value is url for that file
+
     Returns
     -------
     string
@@ -428,6 +433,8 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
     # TODO: fail on unknown fmt
     # TODO: put data format in Fortran syntax eg for booleans and arrays - does nf90nml do this?
     #    - see f90repr in namelist.py: https://github.com/marshallward/f90nml/blob/master/f90nml/namelist.py#L405
+    if nmlfnameurls is None:
+        nmlfnameurls = dict()
     fmt = fmt.lower()
     nmlss = superset(nmlall)
     nmldss = superset(nmldiff(copy.deepcopy(nmlall)))  # avoid in-place modification
@@ -469,7 +476,10 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url=''):
             else:
                 st += '| Group | Variable |'
             for fn in fnames:
-                st += ' {} |'.format(fn.replace('/', '/<br>'))
+                if fn in nmlfnameurls:
+                    st += ' [{}]({}) |'.format(fn.replace('/', '/<br>'), nmlfnameurls[fn])
+                else:
+                    st += ' {} |'.format(fn.replace('/', '/<br>'))
             st += '\n'
             if mom6:
                 st += '| :- |'
