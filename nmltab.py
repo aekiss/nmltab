@@ -360,7 +360,8 @@ Delete part-converted file '{}' before trying again."
     return None
 
 
-def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url='', nmlfnameurls=None):
+def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url='',
+               nmlfnameurls=None, breaks=False):
     """
     Return string representation of dict of Namelists.
 
@@ -406,6 +407,10 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url='', nml
         only keys that match a key in nmlall are used
         value is url for that file
 
+    breaks: boolean, default=False
+        whether to insert line breaks in filenames and group and variable names and values
+        (only used if fmt='md2' or 'markdown2')
+
     Returns
     -------
     string
@@ -435,6 +440,10 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url='', nml
     #    - see f90repr in namelist.py: https://github.com/marshallward/f90nml/blob/master/f90nml/namelist.py#L405
     if nmlfnameurls is None:
         nmlfnameurls = dict()
+    if breaks:
+        br = '<br>'
+    else:
+        br = ''
     fmt = fmt.lower()
     nmlss = superset(nmlall)
     nmldss = superset(nmldiff(copy.deepcopy(nmlall)))  # avoid in-place modification
@@ -457,7 +466,7 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url='', nml
                     if mom6:
                         st += var + ' | '
                     else:
-                        st += '&' + group + '<br>' + var + ' | '
+                        st += '&' + group + br + var + ' | '
                     nvar += 1
             st += '\n|-' + '-' * colwidth + ':|' + '--:|' * nvar
             for fn in fnames:
@@ -477,9 +486,9 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url='', nml
                 st += '| Group | Variable |'
             for fn in fnames:
                 if fn in nmlfnameurls:
-                    st += ' [{}]({}) |'.format(fn.replace('/', '/<br>'), nmlfnameurls[fn])
+                    st += ' [{}]({}) |'.format(fn.replace('/', '/'+br), nmlfnameurls[fn])
                 else:
-                    st += ' {} |'.format(fn.replace('/', '/<br>'))
+                    st += ' {} |'.format(fn.replace('/', '/'+br))
             st += '\n'
             if mom6:
                 st += '| :- |'
@@ -491,7 +500,7 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url='', nml
                 firstvar = True
                 for var in sorted(nmlss[group]):
                     if not ((group in hide) and (var in hide[group])):
-                        varstr = '<br>'.join(chunkstring(var, 21))
+                        varstr = br.join(chunkstring(var, 21))
                         if url != '':
                             varstr = '[{0}]({1}{2})'.format(varstr, url, var)
                         if firstvar:  # only show group once
@@ -514,7 +523,7 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url='', nml
                             st1 = ''
                             if group in nmlall[fn]:
                                 if var in nmlall[fn][group]:
-                                    st1 = '<br>'.join(chunkstring(repr(nmlall[fn][group][var]), 15))  # TODO: use f90repr
+                                    st1 = br.join(chunkstring(repr(nmlall[fn][group][var]), 15))  # TODO: use f90repr
                                     if masterswitch in nmlall[fn][group]:
                                         if not nmlall[fn][group][masterswitch] \
                                                 and var != masterswitch:
@@ -821,6 +830,11 @@ if __name__ == '__main__':
                         help="link all variable and group names to this \
                         URL followed by the variable/group name, e.g. \
                         https://github.com/COSIMA/libaccessom2/search?q=")
+    parser.add_argument('-b', '--breaks',
+                        action='store_true', default=False,
+                        help="whether to insert line breaks in filenames and \
+                            group and variable names and values (only used if \
+                            format='markdown2')")
     parser.add_argument('--tidy_overwrite',
                         action='store_true', default=False,
                         help='OVERWRITE files with only their parsed contents \
@@ -837,6 +851,7 @@ if __name__ == '__main__':
     fmt = vars(args)['format']
     url = vars(args)['url']
     keep = vars(args)['keep']
+    breaks = vars(args)['breaks']
     diff = vars(args)['diff']
     prune = vars(args)['prune']
     ignore = vars(args)['ignore_counters']
@@ -876,11 +891,11 @@ if __name__ == '__main__':
                         \ignored{Greyed values} are ignored.
                         """)
                 print(strnmldict(nmld, fmt=fmt, masterswitch='use_this_module',
-                                 hide=ignored, heading=heading, url=url),
+                                 hide=ignored, heading=heading, url=url, breaks=breaks),
                       end='', flush=True)
             else:
                 print(strnmldict(nmld, fmt=fmt, masterswitch='use_this_module',
-                                 hide=ignored, url=url),
+                                 hide=ignored, url=url, breaks=breaks),
                       end='', flush=True)
             if diff:
                 sys.exit(1)
