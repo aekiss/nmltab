@@ -486,54 +486,54 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url='',
             st += '\n'
     elif fmt in ('md2', 'markdown2'):
         if len(nmlss) > 0:
-            if mom6:
-                st += '| Variable |'
-            else:
-                st += '| Group | Variable |'
+            st += '| '
+            if not mom6:
+                st += ''.join(['Group'.ljust(varwidth), ' | '])
+            st += ''.join(['Variable'.ljust(varwidth+4), ' |'])
             for fn in fnames:
                 if fn in nmlfnameurls:
                     st += ' [{}]({}) |'.format(fn.replace('/', '/'+br), nmlfnameurls[fn])
                 else:
-                    st += ' {} |'.format(fn.replace('/', '/'+br))
-            st += '\n'
-            if mom6:
-                st += '| :- |'
-            else:
-                st += '| :- | :- |'
-            st += ' -: |'*len(fnames)
+                    st += ' {} |'.format(fn.replace('/', '/'+br).rjust(valwidth))
+            st += '\n|'
+            if not mom6:
+                st += ''.join([' ', ':'.ljust(varwidth, '-'), ' |'])
+            st += ''.join([' ', ':'.ljust(varwidth+4, '-'), ' |'])
+            st += ''.join([' ', ':'.rjust(valwidth, '-'), ' |'])*len(fnames)
             st += '\n'
             for group in sorted(nmlss):
                 firstvar = True
                 for var in sorted(nmlss[group]):
                     if not ((group in hide) and (var in hide[group])):
                         varstr = br.join(chunkstring(var, varwidth))
+                        if group in nmldss:
+                            if var in nmldss[group]:
+                                varstr = '**{}**'.format(varstr)
+                        varstr = varstr.ljust(varwidth + 4)  # add 4 for **...**
+                        excess = len(varstr) - (varwidth + 4)
                         if url != '':
                             varstr = '[{0}]({1}{2})'.format(varstr, url, var)
                         if firstvar:  # only show group once
-                            if url == '':
-                                gr = group
-                            else:
-                                gr = '[{0}]({1}{0})'.format(group, url)
+                            gr = group.ljust(varwidth)
+                            if url != '':
+                                gr = '[{0}]({1}{2})'.format(gr, url, group)
                             firstvar = False
                         else:
-                            gr = ''
-                        st1 = '| {} | {} |'.format(gr, varstr)  # replaced below if differences
-                        if group in nmldss:
-                            if var in nmldss[group]:  # new st1 if differences
-                                st1 = '| {} | **{}** |'.format(gr, varstr)
-                                # st1 = '| {} | <span style="color:blue">**{}**</span> |'.format(gr, varstr)  # not supported in github
+                            gr = ''.ljust(varwidth)
+                        st1 = '| {} | {} |'.format(gr, varstr)
                         if mom6:
                             st1 = '|' + '|'.join(st1.split('|')[2:])  # remove group
                         st += st1
                         for fn in fnames:
-                            st1 = ''
+                            st1 = ''.rjust(valwidth - excess)
                             if group in nmlall[fn]:
                                 if var in nmlall[fn][group]:
-                                    st1 = br.join(chunkstring(repr(nmlall[fn][group][var]), valwidth))  # TODO: use f90repr
+                                    st1 = br.join(chunkstring(repr(nmlall[fn][group][var]), valwidth)).rjust(valwidth - excess)  # TODO: use f90repr
                                     if masterswitch in nmlall[fn][group]:
                                         if not nmlall[fn][group][masterswitch] \
                                                 and var != masterswitch:
                                             st1 = '_' + st1 + '_'
+                            excess += len(st1) - valwidth
                             st += ' ' + st1 + ' |'
                         st += '\n'
     elif fmt.startswith('latex'):  # TODO: omit group if mom6 is True
