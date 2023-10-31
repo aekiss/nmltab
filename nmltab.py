@@ -361,7 +361,7 @@ Delete part-converted file '{}' before trying again."
 
 
 def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url='',
-               nmlfnameurls=None, breaks=False):
+               nmlfnameurls=None, breaks=False, varwidth=21, valwidth=15):
     """
     Return string representation of dict of Namelists.
 
@@ -402,14 +402,20 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url='',
         url prefix for hyperlinked variables and groups if fmt='latex-complete'
         or 'csv' or 'markdown2'. url='' (the default) has no hyperlinks
 
-    nmlfnameurls: dict, default=None
+    nmlfnameurls: dict, optional, default=None
         dict specifying url for each nmlfilename (only used if fmt='md2' or 'markdown2')
         only keys that match a key in nmlall are used
         value is url for that file
 
-    breaks: boolean, default=False
+    breaks: boolean, optional, default=False
         whether to insert line breaks in filenames and group and variable names and values
         (only used if fmt='md2' or 'markdown2')
+
+    varwidth: integer, optional, default=21
+        max width of variable names (only used if fmt='md2' or 'markdown2')
+
+    valwidth: integer, optional, default=15
+        max width of values (only used if fmt='md2' or 'markdown2')
 
     Returns
     -------
@@ -500,7 +506,7 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url='',
                 firstvar = True
                 for var in sorted(nmlss[group]):
                     if not ((group in hide) and (var in hide[group])):
-                        varstr = br.join(chunkstring(var, 21))
+                        varstr = br.join(chunkstring(var, varwidth))
                         if url != '':
                             varstr = '[{0}]({1}{2})'.format(varstr, url, var)
                         if firstvar:  # only show group once
@@ -523,7 +529,7 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url='',
                             st1 = ''
                             if group in nmlall[fn]:
                                 if var in nmlall[fn][group]:
-                                    st1 = br.join(chunkstring(repr(nmlall[fn][group][var]), 15))  # TODO: use f90repr
+                                    st1 = br.join(chunkstring(repr(nmlall[fn][group][var]), valwidth))  # TODO: use f90repr
                                     if masterswitch in nmlall[fn][group]:
                                         if not nmlall[fn][group][masterswitch] \
                                                 and var != masterswitch:
