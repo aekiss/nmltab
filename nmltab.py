@@ -486,7 +486,7 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url='',
             st += '\n'
     elif fmt in ('md2', 'markdown2'):
         if len(nmlss) > 0:
-            st += '| '
+            st += '| &#128279; | '
             if not mom6:
                 st += ''.join(['Group'.ljust(varwidth), ' | '])
             st += ''.join(['Variable'.ljust(varwidth+4), ' |'])
@@ -495,7 +495,7 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url='',
                     st += ' [{}]({}) |'.format(fn.replace('/', '/'+br), nmlfnameurls[fn])
                 else:
                     st += ' {} |'.format(fn.replace('/', '/'+br).rjust(valwidth))
-            st += '\n|'
+            st += '\n| :-: |'
             if not mom6:
                 st += ''.join([' ', ':'.ljust(varwidth, '-'), ' |'])
             st += ''.join([' ', ':'.ljust(varwidth+4, '-'), ' |'])
@@ -523,6 +523,7 @@ def strnmldict(nmlall, fmt='', masterswitch='', hide={}, heading='', url='',
                         st1 = '| {} | {} |'.format(gr, varstr)
                         if mom6:
                             st1 = '|' + '|'.join(st1.split('|')[2:])  # remove group
+                        st1 = '| [&#128279;](#{}-{}) '.format(group, var) + st1
                         st += st1
                         for fn in fnames:
                             st1 = ''.rjust(valwidth - excess)
