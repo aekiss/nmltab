@@ -60,6 +60,7 @@ def mom6input(nml):
                 line = line.split('#', 1)[0]  # acts like a comment - see https://github.com/COSIMA/mom6-panan/commit/80e4a872f2b24f2e41da87439dd342df0c643d00#r130376163
                 line = line.replace('Z*', 'ZSTAR')
                 line = line.replace('KPP%', ''). replace('%KPP', '')
+                line = line.replace('MLE%', ''). replace('%MLE', '')
                 line = line.replace('CVMix_CONVECTION%', ''). replace('%CVMix_CONVECTION', '')
                 line = line.replace('CVMIX_DDIFF%', ''). replace('%CVMIX_DDIFF', '')
                 line = line.lstrip().rstrip()
